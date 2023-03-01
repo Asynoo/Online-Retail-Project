@@ -11,25 +11,25 @@ namespace OrderApi.Controllers
     [Route("[controller]")]
     public class OrdersController : ControllerBase
     {
-        private readonly IRepository<Order> repository;
+        private readonly IRepository<Order> _repository;
 
         public OrdersController(IRepository<Order> repos)
         {
-            repository = repos;
+            _repository = repos;
         }
 
         // GET: orders
         [HttpGet]
         public IEnumerable<Order> Get()
         {
-            return repository.GetAll();
+            return _repository.GetAll();
         }
 
         // GET orders/5
         [HttpGet("{id}", Name = "GetOrder")]
         public IActionResult Get(int id)
         {
-            var item = repository.Get(id);
+            var item = _repository.Get(id);
             if (item == null)
             {
                 return NotFound();
@@ -67,7 +67,7 @@ namespace OrderApi.Controllers
 
                 if (updateResponse.IsCompletedSuccessfully)
                 {
-                    var newOrder = repository.Add(order);
+                    var newOrder = _repository.Add(order);
                     return CreatedAtRoute("GetOrder",
                         new { id = newOrder.Id }, newOrder);
                 }

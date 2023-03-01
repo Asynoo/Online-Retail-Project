@@ -9,25 +9,25 @@ namespace ProductApi.Controllers
     [Route("[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly IRepository<Product> repository;
+        private readonly IRepository<Product> _repository;
 
         public ProductsController(IRepository<Product> repos)
         {
-            repository = repos;
+            _repository = repos;
         }
 
         // GET products
         [HttpGet]
         public IEnumerable<Product> Get()
         {
-            return repository.GetAll();
+            return _repository.GetAll();
         }
 
         // GET products/5
         [HttpGet("{id}", Name="GetProduct")]
         public IActionResult Get(int id)
         {
-            var item = repository.Get(id);
+            var item = _repository.Get(id);
             if (item == null)
             {
                 return NotFound();
@@ -44,7 +44,7 @@ namespace ProductApi.Controllers
                 return BadRequest();
             }
 
-            var newProduct = repository.Add(product);
+            var newProduct = _repository.Add(product);
 
             return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
         }
@@ -58,7 +58,7 @@ namespace ProductApi.Controllers
                 return BadRequest();
             }
 
-            var modifiedProduct = repository.Get(id);
+            var modifiedProduct = _repository.Get(id);
 
             if (modifiedProduct == null)
             {
@@ -70,7 +70,7 @@ namespace ProductApi.Controllers
             modifiedProduct.ItemsInStock = product.ItemsInStock;
             modifiedProduct.ItemsReserved = product.ItemsReserved;
 
-            repository.Edit(modifiedProduct);
+            _repository.Edit(modifiedProduct);
             return new NoContentResult();
         }
 
@@ -78,12 +78,12 @@ namespace ProductApi.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            if (repository.Get(id) == null)
+            if (_repository.Get(id) == null)
             {
                 return NotFound();
             }
 
-            repository.Remove(id);
+            _repository.Remove(id);
             return new NoContentResult();
         }
     }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj": {}
+    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\CustomerApi\\CustomerApi.csproj": {}
   },
   "projects": {
-    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj": {
+    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\CustomerApi\\CustomerApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj",
-        "projectName": "ProductApi",
-        "projectPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj",
+        "projectUniqueName": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\CustomerApi\\CustomerApi.csproj",
+        "projectName": "CustomerApi",
+        "projectPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\CustomerApi\\CustomerApi.csproj",
         "packagesPath": "C:\\Users\\Rolf Geschke\\.nuget\\packages\\",
-        "outputPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\obj\\",
+        "outputPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\CustomerApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Rolf Geschke\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -38,29 +38,25 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[7.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore.Abstractions": {
+              "target": "Package",
+              "version": "[7.0.3, )"
+            },
             "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
               "version": "[7.0.3, )"
             },
-            "RestSharp": {
-              "target": "Package",
-              "version": "[108.0.3, )"
-            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.4.0, )"
-            },
-            "Swashbuckle.AspNetCore.Swagger": {
-              "target": "Package",
-              "version": "[6.5.0, )"
-            },
-            "Swashbuckle.AspNetCore.SwaggerGen": {
-              "target": "Package",
-              "version": "[6.5.0, )"
-            },
-            "Swashbuckle.AspNetCore.SwaggerUI": {
-              "target": "Package",
-              "version": "[6.5.0, )"
             }
           },
           "imports": [

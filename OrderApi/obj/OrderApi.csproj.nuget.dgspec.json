@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\OrderApi\\OrderApi.csproj": {}
+    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\OrderApi\\OrderApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\OrderApi\\OrderApi.csproj": {
+    "F:\\Github Repos\\C# repo\\Online-Retail-Project\\OrderApi\\OrderApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\OrderApi\\OrderApi.csproj",
+        "projectUniqueName": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\OrderApi\\OrderApi.csproj",
         "projectName": "OrderApi",
-        "projectPath": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\OrderApi\\OrderApi.csproj",
-        "packagesPath": "C:\\Users\\marcg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\OrderApi\\obj\\",
+        "projectPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\OrderApi\\OrderApi.csproj",
+        "packagesPath": "C:\\Users\\Rolf Geschke\\.nuget\\packages\\",
+        "outputPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\OrderApi\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\marcg\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Rolf Geschke\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net7.0"
@@ -82,7 +82,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
         }
       }
     }

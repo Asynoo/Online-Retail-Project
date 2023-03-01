@@ -1009,19 +1009,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\marcg\\.nuget\\packages\\": {}
+    "C:\\Users\\Rolf Geschke\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\ProductApi\\ProductApi.csproj",
+      "projectUniqueName": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj",
       "projectName": "ProductApi",
-      "projectPath": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\ProductApi\\ProductApi.csproj",
-      "packagesPath": "C:\\Users\\marcg\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\marcg\\Documents\\GitHub\\OnlineRetailProject\\ProductApi\\obj\\",
+      "projectPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\ProductApi.csproj",
+      "packagesPath": "C:\\Users\\Rolf Geschke\\.nuget\\packages\\",
+      "outputPath": "F:\\Github Repos\\C# repo\\Online-Retail-Project\\ProductApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\marcg\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Rolf Geschke\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net7.0"
@@ -1089,7 +1089,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }
