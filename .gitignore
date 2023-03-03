@@ -1,2 +1,3 @@
 
-CustomerApi/obj/CustomerApi.csproj.nuget.dgspec.json
+CustomerApi/obj/*
+ProductApi/obj/*
