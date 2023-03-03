@@ -39,13 +39,30 @@ namespace OrderApi.Controllers
             // Call ProductApi to get the product ordered
             // You may need to change the port number in the BaseUrl below
             // before you can run the request.
-            RestClient c = new RestClient("https://localhost:5001/products/"); //TODO: make this dynamic
-            RestRequest request = new(order.ProductId.ToString());
-            Task<Product?> response = c.GetAsync<Product>(request);
+            RestClient productClient = new("https://productApi/products/");
+            
+            RestRequest productRequest = new();
+            Task<IEnumerable<Product>?> productResponse = productClient.GetAsync<IEnumerable<Product>>(productRequest);
+            productResponse.Wait();
+            IEnumerable<Product>? orderedProducts = productResponse.Result;
+            if (orderedProducts == null || !orderedProducts.Any()) {
+                return NotFound("No products found");
+            }
+            IEnumerable<int> orderProductIds = order.OrderLines.Select(x => x.ProductId);
+            if (!orderProductIds.All(x => orderedProducts.Select(y => y.Id).Contains(x))) {
+                return NotFound("Product doesn't exist");
+            }
+            
+            //var orderProductIds = order.OrderLines.Select(x => new {x.ProductId, x.Quantity});
+            //orderedProducts.All(x => x.pr)
+            
+            RestClient customerClient = new("https://customerApi/customers/");
+            RestRequest request = new(order.CustomerId.ToString());
+            Task<Customer?> response = customerClient.GetAsync<Customer>(request);
             response.Wait();
-            Product? orderedProduct = response.Result;
-            if (orderedProduct is null) {
-                return NotFound("Products not found");
+            Customer? orderCustomer = response.Result;
+            if (orderCustomer is null) {
+                return NotFound("Customer not found");
             }
 
             if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {

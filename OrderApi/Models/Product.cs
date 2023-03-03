@@ -1,5 +1,4 @@
-﻿using System;
-namespace OrderApi.Models
+﻿namespace OrderApi.Models
 {
     public class Product
     {
