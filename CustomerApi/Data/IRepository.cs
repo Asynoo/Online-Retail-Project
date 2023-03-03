@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
-
-namespace CustomerApi.Data;
-
-public interface IRepository<T>
-{
-    IEnumerable<T> GetAll();
-    T Get(int id);
-    T Add(T entity);
-    void Edit(T entity);
-    void Remove(int id);
+namespace CustomerApi.Data {
+    public interface IRepository<T> {
+        Task<IEnumerable<T>> GetAll();
+        Task<T?> Get(int id);
+        Task<T> Add(T entity);
+        Task<bool> Edit(T entity);
+        Task<bool> Remove(int id);
+    }
 }

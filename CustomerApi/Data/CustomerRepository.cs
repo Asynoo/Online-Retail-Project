@@ -1,46 +1,44 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using CustomerApi.Models;
+using Microsoft.EntityFrameworkCore;
+namespace CustomerApi.Data {
+    public class CustomerRepository : IRepository<Customer> {
+        private readonly CustomerApiContext _db;
 
-namespace CustomerApi.Data;
+        public CustomerRepository(CustomerApiContext context) {
+            _db = context;
+        }
 
-public class CustomerRepository : IRepository<Customer>
-{
-    private readonly CustomerApiContext db;
+        async Task<IEnumerable<Customer>> IRepository<Customer>.GetAll() {
+            return await _db.Customers.ToListAsync();
+        }
 
-    public CustomerRepository(CustomerApiContext context)
-    {
-        db = context;
-    }
+        async Task<Customer?> IRepository<Customer>.Get(int id) {
+            return await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
+        }
 
-    IEnumerable<Customer> IRepository<Customer>.GetAll()
-    {
-        return db.Customers.ToList();
-    }
+        async Task<Customer> IRepository<Customer>.Add(Customer entity) {
+            Customer newCustomer = (await _db.Customers.AddAsync(entity)).Entity;
+            await _db.SaveChangesAsync();
+            return newCustomer;
+        }
 
-    Customer IRepository<Customer>.Get(int id)
-    {
-        return db.Customers.FirstOrDefault(c => c.Id == id);
-    }
+        async Task<bool> IRepository<Customer>.Edit(Customer entity) {
+            _db.Entry(entity).State = EntityState.Modified;
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
+        }
 
-    Customer IRepository<Customer>.Add(Customer entity)
-    {
-        var newCustomer = db.Customers.Add(entity).Entity;
-        db.SaveChanges();
-        return newCustomer;
-    }
-
-    void IRepository<Customer>.Edit(Customer entity)
-    {
-        db.Entry(entity).State = EntityState.Modified;
-        db.SaveChanges();
-    }
-
-    void IRepository<Customer>.Remove(int id)
-    {
-        var customer = db.Customers.FirstOrDefault(c => c.Id == id);
-        db.Customers.Remove(customer);
-        db.SaveChanges();
+        async Task<bool> IRepository<Customer>.Remove(int id) {
+            Customer? customer = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer is null) {
+                return false;
+            }
+            _db.Customers.Remove(customer);
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
+        }
     }
 }

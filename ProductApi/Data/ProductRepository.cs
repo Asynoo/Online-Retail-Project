@@ -32,7 +32,7 @@ namespace ProductApi.Data
         }
 
         async Task<bool> IRepository<Product>.Remove(int id) {
-            Product? product = _db.Products.FirstOrDefault(p => p.Id == id);
+            Product? product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
             if (product is null) {
                 return false;
             }
