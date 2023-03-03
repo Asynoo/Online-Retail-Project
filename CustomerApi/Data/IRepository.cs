@@ -1,4 +1,6 @@
-﻿namespace CustomerApi.Data;
+﻿using System.Collections.Generic;
+
+namespace CustomerApi.Data;
 
 public interface IRepository<T>
 {

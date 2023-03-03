@@ -7,5 +7,23 @@ namespace OrderApi.Models
         public DateTime? Date { get; set; }
         public int ProductId { get; set; }
         public int Quantity { get; set; }
+        
+        public OrderLine OrderLine { get; set; }
+    }
+
+    public class OrderLine
+    {
+        public int Id { get; set; }
+        public DateTime? Date { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    enum OrderStatus
+    {
+        Completed,
+        Canceled,
+        Shipped,
+        Paid,
     }
 }
