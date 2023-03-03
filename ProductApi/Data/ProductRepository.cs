@@ -1,47 +1,44 @@
-﻿using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProductApi.Models;
 
 namespace ProductApi.Data
 {
-    public class ProductRepository : IRepository<Product>
-    {
-        private readonly ProductApiContext db;
+    public class ProductRepository : IRepository<Product> {
+        private readonly ProductApiContext _db;
 
-        public ProductRepository(ProductApiContext context)
-        {
-            db = context;
+        public ProductRepository(ProductApiContext context) {
+            _db = context;
         }
 
-        Product IRepository<Product>.Add(Product entity)
-        {
-            var newProduct = db.Products.Add(entity).Entity;
-            db.SaveChanges();
-            return newProduct;
+        async Task<Product> IRepository<Product>.Add(Product entity) {
+            EntityEntry<Product> newProductEntry = await _db.Products.AddAsync(entity);
+            await _db.SaveChangesAsync();
+            return newProductEntry.Entity;
         }
 
-        void IRepository<Product>.Edit(Product entity)
-        {
-            db.Entry(entity).State = EntityState.Modified;
-            db.SaveChanges();
+        async Task<bool> IRepository<Product>.Edit(Product entity) {
+            _db.Entry(entity).State = EntityState.Modified;
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
         }
 
-        Product IRepository<Product>.Get(int id)
-        {
-            return db.Products.FirstOrDefault(p => p.Id == id);
+        async Task<Product?> IRepository<Product>.Get(int id) {
+            return await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        IEnumerable<Product> IRepository<Product>.GetAll()
-        {
-            return db.Products.ToList();
+        async Task<IEnumerable<Product>> IRepository<Product>.GetAll() {
+            return await _db.Products.ToListAsync();
         }
 
-        void IRepository<Product>.Remove(int id)
-        {
-            var product = db.Products.FirstOrDefault(p => p.Id == id);
-            db.Products.Remove(product);
-            db.SaveChanges();
+        async Task<bool> IRepository<Product>.Remove(int id) {
+            Product? product = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product is null) {
+                return false;
+            }
+            _db.Products.Remove(product);
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
         }
     }
 }

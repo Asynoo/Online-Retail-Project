@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
 using OrderApi.Models;
 using RestSharp;
@@ -20,18 +18,16 @@ namespace OrderApi.Controllers
 
         // GET: orders
         [HttpGet]
-        public IEnumerable<Order> Get()
+        public async Task<IEnumerable<Order>> Get()
         {
-            return _repository.GetAll();
+            return await _repository.GetAll();
         }
 
         // GET orders/5
-        [HttpGet("{id}", Name = "GetOrder")]
-        public IActionResult Get(int id)
-        {
-            var item = _repository.Get(id);
-            if (item == null)
-            {
+        [HttpGet("{id:int}", Name = "GetOrder")]
+        public async Task<IActionResult> Get(int id) {
+            Order? item = await _repository.Get(id);
+            if (item is null) {
                 return NotFound();
             }
             return new ObjectResult(item);
@@ -39,35 +35,30 @@ namespace OrderApi.Controllers
 
         // POST orders
         [HttpPost]
-        public IActionResult Post([FromBody]Order order)
-        {
-            if (order == null)
-            {
-                return BadRequest();
-            }
-
+        public async Task<IActionResult> Post([FromBody]Order order) {
             // Call ProductApi to get the product ordered
             // You may need to change the port number in the BaseUrl below
             // before you can run the request.
-            RestClient c = new RestClient("https://localhost:5001/products/");
-            var request = new RestRequest(order.ProductId.ToString());
-            var response = c.GetAsync<Product>(request);
+            RestClient c = new RestClient("https://localhost:5001/products/"); //TODO: make this dynamic
+            RestRequest request = new(order.ProductId.ToString());
+            Task<Product?> response = c.GetAsync<Product>(request);
             response.Wait();
-            var orderedProduct = response.Result;
+            Product? orderedProduct = response.Result;
+            if (orderedProduct is null) {
+                return NotFound("Products not found");
+            }
 
-            if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
-            {
+            if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {
                 // reduce the number of items in stock for the ordered product,
                 // and create a new order.
                 orderedProduct.ItemsReserved += order.Quantity;
-                var updateRequest = new RestRequest(orderedProduct.Id.ToString());
+                RestRequest updateRequest = new(orderedProduct.Id.ToString());
                 updateRequest.AddJsonBody(orderedProduct);
-                var updateResponse = c.PutAsync(updateRequest);
+                Task<RestResponse> updateResponse = c.PutAsync(updateRequest);
                 updateResponse.Wait();
-
-                if (updateResponse.IsCompletedSuccessfully)
-                {
-                    var newOrder = _repository.Add(order);
+                
+                if (updateResponse.IsCompletedSuccessfully) {
+                    Order newOrder = await _repository.Add(order);
                     return CreatedAtRoute("GetOrder",
                         new { id = newOrder.Id }, newOrder);
                 }

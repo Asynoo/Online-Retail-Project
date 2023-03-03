@@ -1,35 +1,27 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ProductApi.Data;
 using ProductApi.Models;
-
-namespace ProductApi.Controllers
-{
+namespace ProductApi.Controllers {
     [ApiController]
     [Route("[controller]")]
-    public class ProductsController : ControllerBase
-    {
+    public class ProductsController : ControllerBase {
         private readonly IRepository<Product> _repository;
 
-        public ProductsController(IRepository<Product> repos)
-        {
+        public ProductsController(IRepository<Product> repos) {
             _repository = repos;
         }
 
         // GET products
         [HttpGet]
-        public IEnumerable<Product> Get()
-        {
-            return _repository.GetAll();
+        public async Task<IEnumerable<Product>> Get() {
+            return await _repository.GetAll();
         }
 
         // GET products/5
-        [HttpGet("{id}", Name="GetProduct")]
-        public IActionResult Get(int id)
-        {
-            var item = _repository.Get(id);
-            if (item == null)
-            {
+        [HttpGet("{id}", Name = "GetProduct")]
+        public async Task<IActionResult> Get(int id) {
+            Product? item = await _repository.Get(id);
+            if (item == null) {
                 return NotFound();
             }
             return new ObjectResult(item);
@@ -37,32 +29,24 @@ namespace ProductApi.Controllers
 
         // POST products
         [HttpPost]
-        public IActionResult Post([FromBody]Product product)
-        {
-            if (product == null)
-            {
-                return BadRequest();
-            }
+        public IActionResult Post([FromBody] Product product) {
 
-            var newProduct = _repository.Add(product);
+            Task<Product> newProduct = _repository.Add(product);
 
             return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
         }
 
         // PUT products/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody]Product product)
-        {
-            if (product == null || product.Id != id)
-            {
+        public async Task<IActionResult> Put(int id, [FromBody] Product product) {
+            if (product.Id != id) {
                 return BadRequest();
             }
 
-            var modifiedProduct = _repository.Get(id);
+            Product? modifiedProduct = await _repository.Get(id);
 
-            if (modifiedProduct == null)
-            {
-                return NotFound();
+            if (modifiedProduct == null) {
+                return NotFound($"Product with id: {id} does not exist");
             }
 
             modifiedProduct.Name = product.Name;
@@ -70,21 +54,19 @@ namespace ProductApi.Controllers
             modifiedProduct.ItemsInStock = product.ItemsInStock;
             modifiedProduct.ItemsReserved = product.ItemsReserved;
 
-            _repository.Edit(modifiedProduct);
-            return new NoContentResult();
+            bool editSuccess = await _repository.Edit(modifiedProduct);
+            return editSuccess ? new OkResult() : new BadRequestResult();
         }
 
         // DELETE products/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            if (_repository.Get(id) == null)
-            {
-                return NotFound();
+        public async Task<IActionResult> Delete(int id) {
+            if (await _repository.Get(id) is null) {
+                return NotFound($"Product with id: {id} does not exist");
             }
 
-            _repository.Remove(id);
-            return new NoContentResult();
+            bool deleteSuccess = await _repository.Remove(id);
+            return deleteSuccess ? new OkResult() : new BadRequestResult();
         }
     }
 }

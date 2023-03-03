@@ -1,51 +1,45 @@
-﻿using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
+﻿using Microsoft.EntityFrameworkCore;
 using OrderApi.Models;
-using System;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace OrderApi.Data
 {
-    public class OrderRepository : IRepository<Order>
-    {
-        private readonly OrderApiContext db;
+    public class OrderRepository : IRepository<Order> {
+        private readonly OrderApiContext _db;
 
-        public OrderRepository(OrderApiContext context)
-        {
-            db = context;
+        public OrderRepository(OrderApiContext context) {
+            _db = context;
         }
 
-        Order IRepository<Order>.Add(Order entity)
-        {
-            if (entity.Date == null)
-                entity.Date = DateTime.Now;
-            
-            var newOrder = db.Orders.Add(entity).Entity;
-            db.SaveChanges();
-            return newOrder;
+        async Task<Order> IRepository<Order>.Add(Order entity) {
+            entity.Date ??= DateTime.Now;
+            EntityEntry<Order> newOrderEntry = await _db.Orders.AddAsync(entity);
+            await _db.SaveChangesAsync();
+            return newOrderEntry.Entity;
         }
 
-        void IRepository<Order>.Edit(Order entity)
-        {
-            db.Entry(entity).State = EntityState.Modified;
-            db.SaveChanges();
+        async Task<bool> IRepository<Order>.Edit(Order entity) {
+            _db.Entry(entity).State = EntityState.Modified;
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
         }
 
-        Order IRepository<Order>.Get(int id)
-        {
-            return db.Orders.FirstOrDefault(o => o.Id == id);
+        async Task<Order?> IRepository<Order>.Get(int id) {
+            return await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
         }
 
-        IEnumerable<Order> IRepository<Order>.GetAll()
-        {
-            return db.Orders.ToList();
+        async Task<IEnumerable<Order>> IRepository<Order>.GetAll() {
+            return await _db.Orders.ToListAsync();
         }
 
-        void IRepository<Order>.Remove(int id)
-        {
-            var order = db.Orders.FirstOrDefault(p => p.Id == id);
-            db.Orders.Remove(order);
-            db.SaveChanges();
+        async Task<bool> IRepository<Order>.Remove(int id) {
+            Order? order = await _db.Orders.FirstOrDefaultAsync(p => p.Id == id);
+            if (order is null) {
+                return false;
+            }
+            _db.Orders.Remove(order);
+            int changes = await _db.SaveChangesAsync();
+            return changes > 0;
         }
     }
 }
