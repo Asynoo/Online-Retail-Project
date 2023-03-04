@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net;
+using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
 using OrderApi.Models;
 using RestSharp;
@@ -40,7 +41,6 @@ namespace OrderApi.Controllers
             // You may need to change the port number in the BaseUrl below
             // before you can run the request.
             RestClient productClient = new("https://productApi/products/");
-            
             RestRequest productRequest = new();
             Task<IEnumerable<Product>?> productResponse = productClient.GetAsync<IEnumerable<Product>>(productRequest);
             productResponse.Wait();
@@ -48,6 +48,7 @@ namespace OrderApi.Controllers
             if (orderedProducts == null || !orderedProducts.Any()) {
                 return NotFound("No products found");
             }
+            
             IEnumerable<int> orderProductIds = order.OrderLines.Select(x => x.ProductId);
             if (!orderProductIds.All(x => orderedProducts.Select(y => y.Id).Contains(x))) {
                 return NotFound("Product doesn't exist");
@@ -65,23 +66,29 @@ namespace OrderApi.Controllers
                 return NotFound("Customer not found");
             }
 
-            if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {
-                // reduce the number of items in stock for the ordered product,
-                // and create a new order.
-                orderedProduct.ItemsReserved += order.Quantity;
-                RestRequest updateRequest = new(orderedProduct.Id.ToString());
-                updateRequest.AddJsonBody(orderedProduct);
-                Task<RestResponse> updateResponse = c.PutAsync(updateRequest);
-                updateResponse.Wait();
-                
-                if (updateResponse.IsCompletedSuccessfully) {
-                    Order newOrder = await _repository.Add(order);
-                    return CreatedAtRoute("GetOrder",
-                        new { id = newOrder.Id }, newOrder);
+            List<Product> productsToUpdate = new();
+            //Verify that each ordered product type has enough items on stock
+            foreach (OrderLine orderLine in order.OrderLines) {
+                Product matchingProduct = orderedProducts.First(y => y.Id == orderLine.ProductId);
+                if (orderLine.Quantity > matchingProduct.AvailableItems) {
+                    return BadRequest($"Product: {matchingProduct.Name} does not have enough items on stock!");
                 }
+                matchingProduct.ItemsReserved += orderLine.Quantity;
+                productsToUpdate.Add(matchingProduct);
+            }
+            // Once the stock is verified, reserve these products and update the new amount in the products API
+            RestRequest updateRequest = new();
+            updateRequest.AddJsonBody(productsToUpdate);
+            Task<RestResponse> updateResponse = productClient.PutAsync(updateRequest);
+            updateResponse.Wait();
+            
+            if (updateResponse.Result.StatusCode == HttpStatusCode.OK) {
+                Order newOrder = await _repository.Add(order);
+                return CreatedAtRoute("GetOrder",
+                    new { id = newOrder.Id }, newOrder);
             }
 
-            // If the order could not be created, "return no content".
+                // If the order could not be created, "return no content".
             return NoContent();
         }
 

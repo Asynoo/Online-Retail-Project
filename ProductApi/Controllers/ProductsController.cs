@@ -58,6 +58,22 @@ namespace ProductApi.Controllers {
             return editSuccess ? new OkResult() : new BadRequestResult();
         }
 
+        // PUT products
+        [HttpPut]
+        public async Task<IActionResult> PutMany([FromBody] List<Product> editedProducts) {
+            List<Product> productsToEdit = (await _repository.GetAll()).ToList();
+            
+            //If any od the products don't exist, return NotFound
+            foreach (Product editedProduct in editedProducts) {
+                if (!productsToEdit.Select(product => product.Id).Contains(editedProduct.Id)) {
+                    return NotFound($"Product with id: {editedProduct.Id} does not exist");
+                }
+            }
+
+            bool editSuccess = await _repository.Edit(editedProducts);
+            return editSuccess ? new OkResult() : new BadRequestResult();
+        }
+
         // DELETE products/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id) {
