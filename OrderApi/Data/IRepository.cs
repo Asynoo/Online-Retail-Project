@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-
-namespace OrderApi.Data
-{
-    public interface IRepository<T>
-    {
+﻿namespace OrderApi.Data {
+    public interface IRepository<T> {
         Task<IEnumerable<T>> GetAll();
         Task<T?> Get(int id);
         Task<T> Add(T entity);

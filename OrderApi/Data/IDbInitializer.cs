@@ -1,7 +1,5 @@
-﻿namespace OrderApi.Data
-{
-    public interface IDbInitializer
-    {
+﻿namespace OrderApi.Data {
+    public interface IDbInitializer {
         void Initialize(OrderApiContext context);
     }
 }

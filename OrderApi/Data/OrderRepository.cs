@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SharedModels;
-using Order = SharedModels.Order;
-
-namespace OrderApi.Data
-{
+namespace OrderApi.Data {
     public class OrderRepository : IRepository<Order> {
         private readonly OrderApiContext _db;
 

@@ -1,31 +1,23 @@
-﻿
-using EasyNetQ;
-using ProductApi;
+﻿using EasyNetQ;
 using ProductApi.Data;
 using ProductApi.Models;
 using SharedModels;
-
-namespace ProductApi.Infrastructure;
-
-    public class MessageListener
-    {
-        IServiceProvider provider;
-        string connectionString;
+namespace ProductApi.Infrastructure {
+    public class MessageListener {
+        private readonly string connectionString;
+        private readonly IServiceProvider provider;
 
         // The service provider is passed as a parameter, because the class needs
         // access to the product repository. With the service provider, we can create
         // a service scope that can provide an instance of the product repository.
-        public MessageListener(IServiceProvider provider, string connectionString)
-        {
+        public MessageListener(IServiceProvider provider, string connectionString) {
             this.provider = provider;
             this.connectionString = connectionString;
         }
 
-        public void Start()
-        {
-            using (var bus = RabbitHutch.CreateBus(connectionString))
-            {
-                bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkCompleted", 
+        public void Start() {
+            using (IBus? bus = RabbitHutch.CreateBus(connectionString)) {
+                bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkCompleted",
                     HandleOrderCompleted, x => x.WithTopic("completed"));
 
                 // Add code to subscribe to other OrderStatusChanged events:
@@ -39,29 +31,25 @@ namespace ProductApi.Infrastructure;
                 // queue.
 
                 // Block the thread so that it will not exit and stop subscribing.
-                lock (this)
-                {
+                lock (this) {
                     Monitor.Wait(this);
                 }
             }
 
         }
 
-        private void HandleOrderCompleted(OrderStatusChangedMessage message)
-        {
+        private void HandleOrderCompleted(OrderStatusChangedMessage message) {
             // A service scope is created to get an instance of the product repository.
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
-            using (var scope = provider.CreateScope())
-            {
-                var services = scope.ServiceProvider;
+            using (IServiceScope scope = provider.CreateScope()) {
+                IServiceProvider services = scope.ServiceProvider;
                 var productRepos = services.GetService<IRepository<Product>>();
 
                 // Reserve items of ordered product (should be a single transaction).
                 // Beware that this operation is not idempotent.
-                foreach (var orderLine in message.OrderLines)
-                {
-                    var product = productRepos.Get(orderLine.ProductId);
+                foreach (OrderLine orderLine in message.OrderLines) {
+                    Task<Product?> product = productRepos.Get(orderLine.ProductId);
                     if (product.Result != null) product.Result.ItemsReserved += orderLine.Quantity;
                     if (product.Result != null) productRepos.Edit(product.Result);
                     /*
@@ -72,5 +60,5 @@ namespace ProductApi.Infrastructure;
                 }
             }
         }
-
     }
+}

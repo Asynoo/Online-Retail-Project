@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
 using OrderApi.Infrastructure;
 using RestSharp;
@@ -8,15 +7,19 @@ namespace OrderApi.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class OrdersController : ControllerBase {
-        //private readonly IRepository<Order> _repository;
-        private readonly IOrderRepository _repository;
-        private readonly IServiceGateway<ProductDto> _productServiceGateway;
+        private readonly IServiceGateway<CustomerDto> _customerServiceGateway;
         private readonly IMessagePublisher _messagePublisher;
 
+        private readonly IServiceGateway<ProductDto> _productServiceProductGateway;
 
-        public OrdersController(IRepository<Order> repos, IServiceGateway<ProductDto> gateway, IMessagePublisher publisher) {
+        //private readonly IRepository<Order> _repository;
+        private readonly IOrderRepository _repository;
+
+
+        public OrdersController(IRepository<Order> repos, IServiceGateway<ProductDto> productGateway, IServiceGateway<CustomerDto> customerGateway, IMessagePublisher publisher) {
             _repository = repos as IOrderRepository;
-            _productServiceGateway = gateway;
+            _productServiceProductGateway = productGateway;
+            _customerServiceGateway = customerGateway;
             _messagePublisher = publisher;
 
         }
@@ -40,7 +43,7 @@ namespace OrderApi.Controllers {
         // POST orders
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Order order) {
-            List<ProductDto>? orderedProducts = _productServiceGateway.GetAll();
+            List<ProductDto>? orderedProducts = _productServiceProductGateway.GetAll();
             if (orderedProducts == null || !orderedProducts.Any()) {
                 return NotFound("No products found");
             }
@@ -53,11 +56,7 @@ namespace OrderApi.Controllers {
             //var orderProductIds = order.OrderLines.Select(x => new {x.ProductId, x.Quantity});
             //orderedProducts.All(x => x.pr)
 
-            RestClient customerClient = new("https://customerApi/customers/");
-            RestRequest request = new(order.CustomerId.ToString());
-            Task<CustomerDto?> response = customerClient.GetAsync<CustomerDto>(request);
-            response.Wait();
-            CustomerDto? orderCustomer = response.Result;
+            CustomerDto? orderCustomer = _customerServiceGateway.Get(order.CustomerId);
             if (orderCustomer is null) {
                 return NotFound("Customer not found");
             }
@@ -73,9 +72,9 @@ namespace OrderApi.Controllers {
                 productsToUpdate.Add(matchingProduct);
             }
             // Once the stock is verified, reserve these products and update the new amount in the products API
-            
-            if (_productServiceGateway.UpdateMany(productsToUpdate)) {
-                
+
+            if (_productServiceProductGateway.UpdateMany(productsToUpdate)) {
+
                 await _messagePublisher.PublishOrderStatusChangedMessage(
                     order.CustomerId, order.OrderLines, "completed");
 
@@ -119,7 +118,7 @@ namespace OrderApi.Controllers {
         private bool ProductItemsAvailable(Order order) {
             foreach (OrderLine orderLine in order.OrderLines) {
                 // Call product service to get the product ordered.
-                ProductDto orderedProduct = _productServiceGateway.Get(orderLine.ProductId);
+                ProductDto orderedProduct = _productServiceProductGateway.Get(orderLine.ProductId);
                 if (orderLine.Quantity > orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {
                     return false;
                 }
@@ -156,6 +155,5 @@ namespace OrderApi.Controllers {
 
             // Add code to implement this method.
         }
-
     }
 }

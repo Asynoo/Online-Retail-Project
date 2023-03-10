@@ -2,30 +2,27 @@
 using ProductApi.Data;
 using ProductApi.Models;
 using SharedModels;
-
 namespace ProductApi.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class ProductsController : ControllerBase {
-        private readonly IRepository<Product> _repository;
         private readonly IConverter<Product, ProductDto> _productConverter;
+        private readonly IRepository<Product> _repository;
 
-        public ProductsController(IRepository<Product> repos, IConverter<Product,ProductDto> converter) {
+        public ProductsController(IRepository<Product> repos, IConverter<Product, ProductDto> converter) {
             _repository = repos;
             _productConverter = converter;
         }
-        
+
         // GET products
         [HttpGet]
-        public async Task<IEnumerable<ProductDto>> Get()
-        {
+        public async Task<IEnumerable<ProductDto>> Get() {
             var productDtoList = new List<ProductDto>();
-            foreach (Product product in await _repository.GetAll())
-            {
+            foreach (Product product in await _repository.GetAll()) {
                 ProductDto productDto = _productConverter.Convert(product);
                 productDtoList.Add(productDto);
             }
-            return  productDtoList;
+            return productDtoList;
         }
 
         // GET products/5
@@ -35,7 +32,7 @@ namespace ProductApi.Controllers {
             if (item == null) {
                 return NotFound();
             }
-            var productDto = _productConverter.Convert(item);
+            ProductDto productDto = _productConverter.Convert(item);
             return new ObjectResult(productDto);
         }
 
@@ -43,13 +40,12 @@ namespace ProductApi.Controllers {
         [HttpPost]
         public IActionResult Post([FromBody] ProductDto productDto) {
 
-            if (productDto == null)
-            {
+            if (productDto == null) {
                 return BadRequest();
             }
 
             Product product = _productConverter.Convert(productDto);
-            Task<Product> newProduct =  _repository.Add(product);
+            Task<Product> newProduct = _repository.Add(product);
 
             return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
             //return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, _productConverter.Convert(newProduct));
@@ -58,7 +54,7 @@ namespace ProductApi.Controllers {
         // PUT products/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] ProductDto productDto) {
-            if (productDto.Id != id ) {
+            if (productDto.Id != id) {
                 return BadRequest();
             }
 
@@ -80,10 +76,10 @@ namespace ProductApi.Controllers {
         // PUT products
         [HttpPut]
         public async Task<IActionResult> PutMany([FromBody] List<ProductDto> editedProductDtos) {
-           
+
             List<Product> productsToEdit = (await _repository.GetAll()).ToList();
             var editedProducts = new List<Product>();
-            
+
             //If any od the products don't exist, return NotFound
             foreach (ProductDto editedProduct in editedProductDtos) {
                 if (!productsToEdit.Select(product => product.Id).Contains(editedProduct.Id)) {
