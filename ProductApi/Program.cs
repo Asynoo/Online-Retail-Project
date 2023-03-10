@@ -7,7 +7,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 // Remember to replace this connectionstring with your own.
 string cloudAMQPConnectionString =
-    "host=hare.rmq.cloudamqp.com;virtualHost=npaprqop;username=npaprqop;password=type your password here";
+    "host=cow.rmq2.cloudamqp.com.com;virtualHost=lylmzobc;username=lylmzobc;password=Eqr45bco!";
+
 
 // Use this connection string if you want to run RabbitMQ server as a container
 // (see docker-compose.yml)
