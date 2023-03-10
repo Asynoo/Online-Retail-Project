@@ -1,7 +1,6 @@
 ﻿
 using EasyNetQ;
-using ProductApi
-using ProductApi
+using ProductApi;
 using ProductApi.Data;
 using ProductApi.Models;
 using SharedModels;
@@ -63,8 +62,13 @@ namespace ProductApi.Infrastructure;
                 foreach (var orderLine in message.OrderLines)
                 {
                     var product = productRepos.Get(orderLine.ProductId);
+                    if (product.Result != null) product.Result.ItemsReserved += orderLine.Quantity;
+                    if (product.Result != null) productRepos.Edit(product.Result);
+                    /*
+                    var product = productRepos.Get(orderLine.ProductId);
                     product.ItemsReserved += orderLine.Quantity;
                     productRepos.Edit(product);
+                    */
                 }
             }
         }

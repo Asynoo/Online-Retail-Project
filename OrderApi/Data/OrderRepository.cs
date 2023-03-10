@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using SharedModels;
+using Order = SharedModels.Order;
 
 namespace OrderApi.Data
 {
@@ -13,7 +14,8 @@ namespace OrderApi.Data
 
         async Task<Order> IRepository<Order>.Add(Order entity) {
             entity.Date ??= DateTime.Now;
-            EntityEntry<Order> newOrderEntry = await _db.Orders.AddAsync(entity);
+            EntityEntry<Order> newOrderEntry;
+            newOrderEntry = await _db.Orders.AddAsync(entity);
             await _db.SaveChangesAsync();
             return newOrderEntry.Entity;
         }
