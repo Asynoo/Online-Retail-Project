@@ -17,9 +17,15 @@ namespace ProductApi.Controllers {
         
         // GET products
         [HttpGet]
-        public async Task<IEnumerable<Product>> Get() {
-            
-            return await _repository.GetAll();
+        public async Task<IEnumerable<ProductDto>> Get()
+        {
+            var productDtoList = new List<ProductDto>();
+            foreach (Product product in await _repository.GetAll())
+            {
+                ProductDto productDto = _productConverter.Convert(product);
+                productDtoList.Add(productDto);
+            }
+            return  productDtoList;
         }
 
         // GET products/5
@@ -29,22 +35,30 @@ namespace ProductApi.Controllers {
             if (item == null) {
                 return NotFound();
             }
-            return new ObjectResult(item);
+            var productDto = _productConverter.Convert(item);
+            return new ObjectResult(productDto);
         }
 
         // POST products
         [HttpPost]
-        public IActionResult Post([FromBody] Product product) {
+        public IActionResult Post([FromBody] ProductDto productDto) {
 
-            Task<Product> newProduct = _repository.Add(product);
+            if (productDto == null)
+            {
+                return BadRequest();
+            }
+
+            Product product = _productConverter.Convert(productDto);
+            Task<Product> newProduct =  _repository.Add(product);
 
             return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
+            //return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, _productConverter.Convert(newProduct));
         }
 
         // PUT products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Product product) {
-            if (product.Id != id) {
+        public async Task<IActionResult> Put(int id, [FromBody] ProductDto productDto) {
+            if (productDto.Id != id ) {
                 return BadRequest();
             }
 
@@ -54,10 +68,10 @@ namespace ProductApi.Controllers {
                 return NotFound($"Product with id: {id} does not exist");
             }
 
-            modifiedProduct.Name = product.Name;
-            modifiedProduct.Price = product.Price;
-            modifiedProduct.ItemsInStock = product.ItemsInStock;
-            modifiedProduct.ItemsReserved = product.ItemsReserved;
+            modifiedProduct.Name = productDto.Name;
+            modifiedProduct.Price = productDto.Price;
+            modifiedProduct.ItemsInStock = productDto.ItemsInStock;
+            modifiedProduct.ItemsReserved = productDto.ItemsReserved;
 
             bool editSuccess = await _repository.Edit(modifiedProduct);
             return editSuccess ? new OkResult() : new BadRequestResult();
@@ -65,14 +79,17 @@ namespace ProductApi.Controllers {
 
         // PUT products
         [HttpPut]
-        public async Task<IActionResult> PutMany([FromBody] List<Product> editedProducts) {
+        public async Task<IActionResult> PutMany([FromBody] List<ProductDto> editedProductDtos) {
+           
             List<Product> productsToEdit = (await _repository.GetAll()).ToList();
+            var editedProducts = new List<Product>();
             
             //If any od the products don't exist, return NotFound
-            foreach (Product editedProduct in editedProducts) {
+            foreach (ProductDto editedProduct in editedProductDtos) {
                 if (!productsToEdit.Select(product => product.Id).Contains(editedProduct.Id)) {
                     return NotFound($"Product with id: {editedProduct.Id} does not exist");
                 }
+                editedProducts.Add(_productConverter.Convert(editedProduct));
             }
 
             bool editSuccess = await _repository.Edit(editedProducts);
