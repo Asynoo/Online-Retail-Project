@@ -1,19 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProductApi.Data;
 using ProductApi.Models;
+using SharedModels;
+
 namespace ProductApi.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class ProductsController : ControllerBase {
         private readonly IRepository<Product> _repository;
+        private readonly IConverter<Product, ProductDto> _productConverter;
 
-        public ProductsController(IRepository<Product> repos) {
+        public ProductsController(IRepository<Product> repos, IConverter<Product,ProductDto> converter) {
             _repository = repos;
+            _productConverter = converter;
         }
-
+        
         // GET products
         [HttpGet]
         public async Task<IEnumerable<Product>> Get() {
+            
             return await _repository.GetAll();
         }
 

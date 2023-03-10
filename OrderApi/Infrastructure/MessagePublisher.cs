@@ -17,7 +17,7 @@ public class MessagePublisher : IMessagePublisher, IDisposable
         bus.Dispose();
     }
 
-    public void PublishOrderStatusChangedMessage(int? customerId, IList<OrderLine> orderLines, string topic)
+    public async Task PublishOrderStatusChangedMessage(int? customerId, IList<OrderLine> orderLines, string topic)
     {
         var message = new OrderStatusChangedMessage
         { 
@@ -25,7 +25,7 @@ public class MessagePublisher : IMessagePublisher, IDisposable
             OrderLines = orderLines 
         };
 
-        bus.PubSub.Publish(message, topic);
+        await bus.PubSub.PublishAsync(message, topic);
     }
 
 }

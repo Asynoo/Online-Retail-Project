@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OrderApi.Data;
-using OrderApi.Models;
+using SharedModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
