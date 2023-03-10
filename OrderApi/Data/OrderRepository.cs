@@ -10,7 +10,7 @@ namespace OrderApi.Data {
         }
 
         async Task<Order> IRepository<Order>.Add(Order entity) {
-            entity.Date ??= DateTime.Now;
+            entity.Date = DateTime.Now;
             EntityEntry<Order> newOrderEntry;
             newOrderEntry = await _db.Orders.AddAsync(entity);
             await _db.SaveChangesAsync();

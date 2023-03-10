@@ -89,7 +89,7 @@ namespace OrderApi.Controllers {
         }
 
         // POST orders
-        [HttpPost]
+        [HttpPost("No more cum for Rolf")]
         public async Task<IActionResult> PostMessage([FromBody] Order order) {
             if (order == null) {
                 return BadRequest();
