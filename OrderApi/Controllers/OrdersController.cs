@@ -4,21 +4,17 @@ using OrderApi.Data;
 using OrderApi.Infrastructure;
 using RestSharp;
 using SharedModels;
-
-namespace OrderApi.Controllers
-{
+namespace OrderApi.Controllers {
     [ApiController]
     [Route("[controller]")]
-    public class OrdersController : ControllerBase
-    {
+    public class OrdersController : ControllerBase {
         //private readonly IRepository<Order> _repository;
-        IOrderRepository _repository;
-        IServiceGateway<ProductDto> _productServiceGateway;
-        IMessagePublisher _messagePublisher;
+        private readonly IOrderRepository _repository;
+        private readonly IServiceGateway<ProductDto> _productServiceGateway;
+        private readonly IMessagePublisher _messagePublisher;
 
 
-        public OrdersController(IRepository<Order> repos, IServiceGateway<ProductDto> gateway, IMessagePublisher publisher)
-        {
+        public OrdersController(IRepository<Order> repos, IServiceGateway<ProductDto> gateway, IMessagePublisher publisher) {
             _repository = repos as IOrderRepository;
             _productServiceGateway = gateway;
             _messagePublisher = publisher;
@@ -27,8 +23,7 @@ namespace OrderApi.Controllers
 
         // GET: orders
         [HttpGet]
-        public async Task<IEnumerable<Order>> Get()
-        {
+        public async Task<IEnumerable<Order>> Get() {
             return await _repository.GetAll();
         }
 
@@ -44,27 +39,20 @@ namespace OrderApi.Controllers
 
         // POST orders
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]Order order) {
-            // Call ProductApi to get the product ordered
-            // You may need to change the port number in the BaseUrl below
-            // before you can run the request.
-            RestClient productClient = new("https://productApi/products/");
-            RestRequest productRequest = new();
-            Task<IEnumerable<ProductDto>?> productResponse = productClient.GetAsync<IEnumerable<ProductDto>>(productRequest);
-            productResponse.Wait();
-            IEnumerable<ProductDto>? orderedProducts = productResponse.Result;
+        public async Task<IActionResult> Post([FromBody] Order order) {
+            List<ProductDto>? orderedProducts = _productServiceGateway.GetAll();
             if (orderedProducts == null || !orderedProducts.Any()) {
                 return NotFound("No products found");
             }
-            
+
             IEnumerable<int> orderProductIds = order.OrderLines.Select(x => x.ProductId);
             if (!orderProductIds.All(x => orderedProducts.Select(y => y.Id).Contains(x))) {
                 return NotFound("Product doesn't exist");
             }
-            
+
             //var orderProductIds = order.OrderLines.Select(x => new {x.ProductId, x.Quantity});
             //orderedProducts.All(x => x.pr)
-            
+
             RestClient customerClient = new("https://customerApi/customers/");
             RestRequest request = new(order.CustomerId.ToString());
             Task<CustomerDto?> response = customerClient.GetAsync<CustomerDto>(request);
@@ -85,65 +73,54 @@ namespace OrderApi.Controllers
                 productsToUpdate.Add(matchingProduct);
             }
             // Once the stock is verified, reserve these products and update the new amount in the products API
-            RestRequest updateRequest = new();
-            updateRequest.AddJsonBody(productsToUpdate);
-            Task<RestResponse> updateResponse = productClient.PutAsync(updateRequest);
-            updateResponse.Wait();
             
-            if (updateResponse.Result.StatusCode == HttpStatusCode.OK) {
+            if (_productServiceGateway.UpdateMany(productsToUpdate)) {
+                
+                await _messagePublisher.PublishOrderStatusChangedMessage(
+                    order.CustomerId, order.OrderLines, "completed");
+
+                // Create order.
+                order.Status = Order.OrderStatus.completed;
                 Order newOrder = await _repository.Add(order);
-                return CreatedAtRoute("GetOrder",
-                    new { id = newOrder.Id }, newOrder);
+                return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
             }
 
-                // If the order could not be created, "return no content".
+            // If the order could not be created, "return no content".
             return NoContent();
         }
-        
-                // POST orders
+
+        // POST orders
         [HttpPost]
-        public async Task<IActionResult> PostMessage([FromBody]Order order)
-        {
-            if (order == null)
-            {
+        public async Task<IActionResult> PostMessage([FromBody] Order order) {
+            if (order == null) {
                 return BadRequest();
             }
 
-            if (ProductItemsAvailable(order))
-            {
-                try
-                {
+            if (ProductItemsAvailable(order)) {
+                try {
                     // Publish OrderStatusChangedMessage. If this operation
                     // fails, the order will not be created
                     await _messagePublisher.PublishOrderStatusChangedMessage(
-                        order.customerId, order.OrderLines, "completed");
+                        order.CustomerId, order.OrderLines, "completed");
 
                     // Create order.
                     order.Status = Order.OrderStatus.completed;
-                    var newOrder = _repository.Add(order);
+                    Task<Order> newOrder = _repository.Add(order);
                     return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
-                }
-                catch
-                {
+                } catch {
                     return StatusCode(500, "An error happened. Try again.");
                 }
             }
-            else
-            {
-                // If there are not enough product items available.
-                return StatusCode(500, "Not enough items in stock.");
-            }
+            // If there are not enough product items available.
+            return StatusCode(500, "Not enough items in stock.");
         }
         //todo fix these messaging stuff
-        
-        private  bool ProductItemsAvailable(Order order)
-        {
-            foreach (var orderLine in order.OrderLines)
-            {
+
+        private bool ProductItemsAvailable(Order order) {
+            foreach (OrderLine orderLine in order.OrderLines) {
                 // Call product service to get the product ordered.
-                var orderedProduct = _productServiceGateway.Get(orderLine.ProductId);
-                if (orderLine.Quantity > orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
-                {
+                ProductDto orderedProduct = _productServiceGateway.Get(orderLine.ProductId);
+                if (orderLine.Quantity > orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {
                     return false;
                 }
             }
@@ -154,8 +131,7 @@ namespace OrderApi.Controllers
         // This action method cancels an order and publishes an OrderStatusChangedMessage
         // with topic set to "cancelled".
         [HttpPut("{id}/cancel")]
-        public IActionResult Cancel(int id)
-        {
+        public IActionResult Cancel(int id) {
             throw new NotImplementedException();
 
             // Add code to implement this method.
@@ -165,8 +141,7 @@ namespace OrderApi.Controllers
         // This action method ships an order and publishes an OrderStatusChangedMessage.
         // with topic set to "shipped".
         [HttpPut("{id}/ship")]
-        public IActionResult Ship(int id)
-        {
+        public IActionResult Ship(int id) {
             throw new NotImplementedException();
 
             // Add code to implement this method.
@@ -176,8 +151,7 @@ namespace OrderApi.Controllers
         // This action method marks an order as paid and publishes a CreditStandingChangedMessage
         // (which have not yet been implemented), if the credit standing changes.
         [HttpPut("{id}/pay")]
-        public IActionResult Pay(int id)
-        {
+        public IActionResult Pay(int id) {
             throw new NotImplementedException();
 
             // Add code to implement this method.
