@@ -9,9 +9,11 @@ namespace OrderApi.Infrastructure {
             _productServiceBaseUrl = baseUrl;
         }
 
+
+        
         public ProductDto? Get(int id) {
             RestClient c = new(_productServiceBaseUrl);
-
+        
             RestRequest request = new(id.ToString());
             Task<ProductDto?> response = c.GetAsync<ProductDto>(request);
             response.Wait();

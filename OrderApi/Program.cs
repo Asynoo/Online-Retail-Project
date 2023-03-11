@@ -29,6 +29,10 @@ builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 builder.Services.AddSingleton<IServiceGateway<ProductDto>>(new
     ProductServiceGateway(productServiceBaseUrl));
 
+// Register customer service gateway for dependency injection
+builder.Services.AddSingleton<IServiceGateway<CustomerDto>>(new
+    CustomerServiceGateway(productServiceBaseUrl));
+
 // Register MessagePublisher (a messaging gateway) for dependency injection
 builder.Services.AddSingleton<IMessagePublisher>(new
     MessagePublisher(cloudAMQPConnectionString));
