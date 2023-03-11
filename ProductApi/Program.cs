@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
 using ProductApi.Infrastructure;
 using ProductApi.Models;
+using SharedModels;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
@@ -23,6 +25,9 @@ builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
+
+// Register ProductConverter for dependency injection
+builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

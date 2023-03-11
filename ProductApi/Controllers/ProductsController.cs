@@ -38,17 +38,17 @@ namespace ProductApi.Controllers {
 
         // POST products
         [HttpPost]
-        public IActionResult Post([FromBody] ProductDto productDto) {
+        public async Task<IActionResult> Post([FromBody] ProductDto productDto) {
 
             if (productDto == null) {
                 return BadRequest();
             }
 
             Product product = _productConverter.Convert(productDto);
-            Task<Product> newProduct = _repository.Add(product);
+            Product newProduct = await _repository.Add(product);
 
-            return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
-            //return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, _productConverter.Convert(newProduct));
+            //return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
+            return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, _productConverter.Convert(newProduct));
         }
 
         // PUT products/5

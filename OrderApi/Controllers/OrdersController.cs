@@ -88,44 +88,6 @@ namespace OrderApi.Controllers {
             return NoContent();
         }
 
-        // POST orders
-        [HttpPost("No more cum for Rolf")]
-        public async Task<IActionResult> PostMessage([FromBody] Order order) {
-            if (order == null) {
-                return BadRequest();
-            }
-
-            if (ProductItemsAvailable(order)) {
-                try {
-                    // Publish OrderStatusChangedMessage. If this operation
-                    // fails, the order will not be created
-                    await _messagePublisher.PublishOrderStatusChangedMessage(
-                        order.CustomerId, order.OrderLines, "completed");
-
-                    // Create order.
-                    order.Status = Order.OrderStatus.completed;
-                    Task<Order> newOrder = _repository.Add(order);
-                    return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
-                } catch {
-                    return StatusCode(500, "An error happened. Try again.");
-                }
-            }
-            // If there are not enough product items available.
-            return StatusCode(500, "Not enough items in stock.");
-        }
-        //todo fix these messaging stuff
-
-        private bool ProductItemsAvailable(Order order) {
-            foreach (OrderLine orderLine in order.OrderLines) {
-                // Call product service to get the product ordered.
-                ProductDto orderedProduct = _productServiceProductGateway.Get(orderLine.ProductId);
-                if (orderLine.Quantity > orderedProduct.ItemsInStock - orderedProduct.ItemsReserved) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         // PUT orders/5/cancel
         // This action method cancels an order and publishes an OrderStatusChangedMessage
         // with topic set to "cancelled".

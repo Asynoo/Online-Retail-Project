@@ -1,14 +1,19 @@
 ﻿using CustomerApi.Data;
 using CustomerApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using SharedModels;
+
 namespace CustomerApi.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class CustomerController : Controller {
         private readonly IRepository<Customer> _repository;
+        private readonly IConverter<Customer, CustomerDto> _customerConverter;
 
-        public CustomerController(IRepository<Customer> repos) {
+        public CustomerController(IRepository<Customer> repos, IConverter<Customer, CustomerDto> converter) {
             _repository = repos;
+            _customerConverter = converter;
+
         }
 
         //GET Customer
@@ -19,36 +24,39 @@ namespace CustomerApi.Controllers {
                 return NotFound();
             }
 
-            return new ObjectResult(customer);
+            CustomerDto customerDto = _customerConverter.Convert(customer);
+            return new ObjectResult(customerDto);
         }
 
         //POST Customer
         [HttpPost]
-        public IActionResult Post([FromBody] Customer customer) {
+        public async Task<IActionResult> Post([FromBody] CustomerDto customerDto)
+        {
 
-            Task<Customer> newCustomer = _repository.Add(customer);
-            return CreatedAtRoute("GetProduct", new { id = newCustomer.Id }, newCustomer);
+            Customer customer = _customerConverter.Convert(customerDto);
+            Customer newCustomer = await _repository.Add(customer);
+            return CreatedAtRoute("GetCustomer", new { id = newCustomer.Id }, _customerConverter.Convert(newCustomer));
         }
 
         //Put Customer
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] Customer customer) {
-            if (customer.Id != id) {
+        public async Task<IActionResult> Put(int id, [FromBody] CustomerDto customerDto) {
+            if (customerDto.Id != id) {
                 return BadRequest();
             }
 
             Customer? modifiedCustomer = await _repository.Get(id);
 
             if (modifiedCustomer == null) {
-                return NotFound();
+                return NotFound($"Customer with id: {id} does not exist");
             }
 
-            modifiedCustomer.Name = customer.Name;
-            modifiedCustomer.Email = customer.Email;
-            modifiedCustomer.Phone = customer.Phone;
-            modifiedCustomer.BillingAddress = customer.BillingAddress;
-            modifiedCustomer.ShippingAddress = customer.ShippingAddress;
-            modifiedCustomer.creditStanding = customer.creditStanding;
+            modifiedCustomer.Name = customerDto.Name;
+            modifiedCustomer.Email = customerDto.Email;
+            modifiedCustomer.Phone = customerDto.Phone;
+            modifiedCustomer.BillingAddress = customerDto.BillingAddress;
+            modifiedCustomer.ShippingAddress = customerDto.ShippingAddress;
+            modifiedCustomer.creditStanding = customerDto.creditStanding;
 
             bool editSuccess = await _repository.Edit(modifiedCustomer);
             return editSuccess ? new OkResult() : new BadRequestResult();
