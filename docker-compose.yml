@@ -4,19 +4,19 @@ services:
   customerapi:
     image: ${DOCKER_REGISTRY-}customerapi
     build:
-      context: little
+      context: .
       dockerfile: CustomerApi/Dockerfile
 
   orderapi:
     image: ${DOCKER_REGISTRY-}orderapi
     build:
-      context: easter
+      context: .
       dockerfile: OrderApi/Dockerfile
 
 
   productapi:
     image: ${DOCKER_REGISTRY-}productapi
     build:
-      context: egg
+      context: .
       dockerfile: ProductApi/Dockerfile
 
