@@ -129,12 +129,13 @@ namespace ProductApi.Infrastructure {
                 IServiceProvider services = scope.ServiceProvider;
                 var productRepos = services.GetService<IRepository<Product>>();
 
-                // Paid for ordered product (should be a single transaction).
+                // Paid for ordered product, removes items from stock (should be a single transaction).
                 // Beware that this operation is not idempotent.
                 foreach (OrderLine orderLine in message.OrderLines) {
                     Task<Product?> product = productRepos.Get(orderLine.ProductId);
                     if (product.Result == null) continue;
-                    product.Result.ItemsReserved += orderLine.Quantity;
+                    product.Result.ItemsReserved -= orderLine.Quantity;
+                    product.Result.ItemsInStock -= orderLine.Quantity;
                     productRepos.Edit(product.Result);
 
                 }
