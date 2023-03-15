@@ -8,23 +8,21 @@ namespace OrderApi.Infrastructure {
             _customerServiceBaseUrl = baseUrl;
         }
 
-        public CustomerDto? Get(int id) {
+        public async Task<CustomerDto?> Get(int id) {
             RestClient c = new(_customerServiceBaseUrl);
 
             RestRequest request = new(id.ToString());
-            Task<CustomerDto?> response = c.GetAsync<CustomerDto>(request);
-            response.Wait();
-            return response.Result;
+            CustomerDto? response = await c.GetAsync<CustomerDto>(request);
+            return response;
         }
-        public List<CustomerDto>? GetAll() {
+        public async Task<List<CustomerDto>?> GetAll() {
             RestClient c = new(_customerServiceBaseUrl);
 
             RestRequest request = new();
-            Task<IEnumerable<CustomerDto>?> response = c.GetAsync<IEnumerable<CustomerDto>>(request);
-            response.Wait();
-            return response.Result?.ToList();
+            IEnumerable<CustomerDto>? response = await c.GetAsync<IEnumerable<CustomerDto>>(request);
+            return response?.ToList();
         }
-        public bool UpdateMany(List<CustomerDto> updatedModels) {
+        public Task<bool> UpdateMany(List<CustomerDto> updatedModels) {
             Console.WriteLine("Fuck you");
             throw new NotImplementedException();
         }

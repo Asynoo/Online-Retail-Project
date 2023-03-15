@@ -42,7 +42,7 @@ namespace OrderApi.Controllers {
         // POST orders
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Order order) {
-            List<ProductDto>? orderedProducts = _productServiceProductGateway.GetAll();
+            List<ProductDto>? orderedProducts = await _productServiceProductGateway.GetAll();
             if (orderedProducts == null || !orderedProducts.Any()) {
                 return NotFound("No products found");
             }
@@ -55,7 +55,7 @@ namespace OrderApi.Controllers {
             //var orderProductIds = order.OrderLines.Select(x => new {x.ProductId, x.Quantity});
             //orderedProducts.All(x => x.pr)
 
-            CustomerDto? orderCustomer = _customerServiceGateway.Get(order.CustomerId);
+            CustomerDto? orderCustomer = await _customerServiceGateway.Get(order.CustomerId);
             if (orderCustomer is null) {
                 return NotFound("Customer not found");
             }
@@ -72,7 +72,7 @@ namespace OrderApi.Controllers {
             }
             // Once the stock is verified, reserve these products and update the new amount in the products API
 
-            if (_productServiceProductGateway.UpdateMany(productsToUpdate)) {
+            if (await _productServiceProductGateway.UpdateMany(productsToUpdate)) {
 
                 await _messagePublisher.PublishOrderStatusChangedMessage(
                     order.CustomerId, order.OrderLines, "completed");

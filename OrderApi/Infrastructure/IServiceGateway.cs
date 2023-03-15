@@ -1,7 +1,9 @@
-﻿namespace OrderApi.Infrastructure {
+﻿using SharedModels;
+
+namespace OrderApi.Infrastructure {
     public interface IServiceGateway<T> {
-        T? Get(int id);
-        List<T>? GetAll();
-        bool UpdateMany(List<T> updatedModels);
+        Task<T?> Get(int id);
+        Task<List<T>?> GetAll();
+        Task<bool> UpdateMany(List<T> updatedModels);
     }
 }

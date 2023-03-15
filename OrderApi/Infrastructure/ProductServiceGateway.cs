@@ -9,34 +9,29 @@ namespace OrderApi.Infrastructure {
             _productServiceBaseUrl = baseUrl;
         }
 
-
-        
-        public ProductDto? Get(int id) {
+        public async Task<ProductDto?> Get(int id) {
             RestClient c = new(_productServiceBaseUrl);
         
             RestRequest request = new(id.ToString());
-            Task<ProductDto?> response = c.GetAsync<ProductDto>(request);
-            response.Wait();
-            return response.Result;
+            ProductDto? response = await c.GetAsync<ProductDto>(request);
+            return response;
         }
 
-        public List<ProductDto>? GetAll() {
+        public async Task<List<ProductDto>?> GetAll() {
             RestClient c = new(_productServiceBaseUrl);
 
             RestRequest request = new();
-            Task<IEnumerable<ProductDto>?> response = c.GetAsync<IEnumerable<ProductDto>>(request);
-            response.Wait();
-            return response.Result?.ToList();
+            IEnumerable<ProductDto>? response = await c.GetAsync<IEnumerable<ProductDto>>(request);
+            return response?.ToList();
         }
 
-        public bool UpdateMany(List<ProductDto> updatedModels) {
+        public async Task<bool> UpdateMany(List<ProductDto> updatedModels) {
             RestClient c = new(_productServiceBaseUrl);
 
             RestRequest request = new();
             request.AddJsonBody(updatedModels);
-            Task<RestResponse> response = c.PutAsync(request);
-            response.Wait();
-            return response.Result.StatusCode is HttpStatusCode.OK;
+            RestResponse response = await c.PutAsync(request);
+            return response.StatusCode is HttpStatusCode.OK;
         }
     }
 }
