@@ -121,7 +121,7 @@ namespace OrderApi.Controllers {
         public async Task<IActionResult> Cancel(int id)
         {
             Order? order = await _repository.Get(id);
-            if (order != null && (order.Status != Order.OrderStatus.Completed || order.Status != Order.OrderStatus.Pending))
+            if (order.Status != Order.OrderStatus.Completed || order.Status != Order.OrderStatus.Pending)
             {
                 return BadRequest("Order could not be cancelled as it was not completed");
             }
@@ -138,7 +138,7 @@ namespace OrderApi.Controllers {
         [HttpPut("{id}/ship")]
         public async Task<IActionResult> Ship(int id) {
             Order? order = await _repository.Get(id);
-            if (order != null && order.Status != Order.OrderStatus.Completed)
+            if (order.Status != Order.OrderStatus.Completed)
             {
                 return BadRequest("Order could not be shipped as the status was not completed");
             }
@@ -155,14 +155,15 @@ namespace OrderApi.Controllers {
         [HttpPut("{id}/pay")]
         public async Task<IActionResult> Pay(int id) {
             Order? order = await _repository.Get(id);
-            if (order != null && order.Status != Order.OrderStatus.Shipped)
+            if (order.Status != Order.OrderStatus.Shipped)
             {
                 return BadRequest("Order could not be paid as the status was not shipped");
             }
             //cancel order
             order.Status = Order.OrderStatus.Paid;
             await _repository.Edit(order);
-            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
+            //await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
+            await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid"); //todo make this increase the customer credit standing
             return Ok(id);
         }
     }

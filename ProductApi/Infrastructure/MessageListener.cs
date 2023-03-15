@@ -27,6 +27,8 @@ namespace ProductApi.Infrastructure {
                     HandleOrderCancelled, x => x.WithTopic("cancelled"));
                 _bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiPaid",
                     HandleOrderPaid, x => x.WithTopic("paid"));
+                _bus.PubSub.Subscribe<CreditStandingChangedMessage>("productApiPaid",
+                    HandleOrderPaidTwo, x => x.WithTopic("paid"));
                 // Block the thread so that it will not exit and stop subscribing.
                 lock (this) {
                     Monitor.Wait(this);
@@ -139,6 +141,22 @@ namespace ProductApi.Infrastructure {
                     productRepos.Edit(product.Result);
 
                 }
+            }
+        }
+        
+        private void HandleOrderPaidTwo(CreditStandingChangedMessage message) {
+            // A service scope is created to get an instance of the product repository.
+            // When the service scope is disposed, the product repository instance will
+            // also be disposed.
+            using (IServiceScope scope = _provider.CreateScope()) {
+                IServiceProvider services = scope.ServiceProvider;
+                var customerRepos = services.GetService<Data.IRepository<CustomerDto>>();
+                // Paid for ordered product, increases customer rating (should be a single transaction).
+                // Beware that this operation is not idempotent.
+                Task<CustomerDto> customer = customerRepos.Get(message.CustomerId);
+                    customer.Result.creditStanding += message.CreditStanding;
+                    customerRepos.Edit(customer.Result); 
+                    
             }
         }
 
