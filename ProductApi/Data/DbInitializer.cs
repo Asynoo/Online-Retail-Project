@@ -14,7 +14,7 @@ namespace ProductApi.Data {
             var products = new List<Product> {
                 new() { Name = "Hammer", Price = 100, ItemsInStock = 10, ItemsReserved = 0 },
                 new() { Name = "Screwdriver", Price = 70, ItemsInStock = 20, ItemsReserved = 0 },
-                new() { Name = "Drill", Price = 500, ItemsInStock = 2, ItemsReserved = 0 }
+                new() { Name = "Drill", Price = 500, ItemsInStock = 20, ItemsReserved = 0 }
             };
 
             context.Products.AddRange(products);

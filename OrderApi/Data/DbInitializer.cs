@@ -13,7 +13,7 @@ namespace OrderApi.Data {
 
             var orders = new List<Order> {
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Paid, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Pending, OrderLines = new List<OrderLine> {
                         new() { ProductId = 1, Quantity = 2 }
                     }
                 },
@@ -23,13 +23,13 @@ namespace OrderApi.Data {
                     }
                 },
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Pending, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Shipped, OrderLines = new List<OrderLine> {
                         new() { ProductId = 2, Quantity = 1 }
                     }
                 },
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Shipped, OrderLines = new List<OrderLine> {
-                        new() { ProductId = 2, Quantity = 2 }
+                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Paid, OrderLines = new List<OrderLine> {
+                        new() { ProductId = 2, Quantity = 1 }
                     }
                 }
             };

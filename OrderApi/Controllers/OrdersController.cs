@@ -71,6 +71,8 @@ namespace OrderApi.Controllers {
             }
             // Once the stock is verified, reserve these products and update the new amount in the products API
 
+            
+            //todo i tried adding this to see if i could post an order.... doesnt work
             try
             {
                 order.Status = Order.OrderStatus.Pending;
@@ -88,8 +90,6 @@ namespace OrderApi.Controllers {
                 }
                 
                 return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
-
-                
             }
             catch
             {
@@ -97,12 +97,12 @@ namespace OrderApi.Controllers {
             }
             
             
-            
+            //todo maybe revert back to this by commenting out the above
 
             
             if (await _productServiceProductGateway.UpdateMany(productsToUpdate)) {
 
-                //todo maybe revert await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
+                 await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
 
                 // Create order.
                 order.Status = Order.OrderStatus.Completed;
