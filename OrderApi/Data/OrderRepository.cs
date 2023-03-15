@@ -24,11 +24,11 @@ namespace OrderApi.Data {
         }
 
         async Task<Order?> IRepository<Order>.Get(int id) {
-            return await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            return await _db.Orders.Include(o => o.OrderLines).FirstOrDefaultAsync(o => o.Id == id);
         }
 
         async Task<IEnumerable<Order>> IRepository<Order>.GetAll() {
-            return await _db.Orders.ToListAsync();
+            return await _db.Orders.Include(o => o.OrderLines).ToListAsync();
         }
 
         async Task<bool> IRepository<Order>.Remove(int id) {
