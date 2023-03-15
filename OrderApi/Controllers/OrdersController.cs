@@ -71,9 +71,38 @@ namespace OrderApi.Controllers {
             }
             // Once the stock is verified, reserve these products and update the new amount in the products API
 
+            try
+            {
+                order.Status = Order.OrderStatus.Pending;
+                Order newOrder = await _repository.Add(order);
+                
+                await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
+
+                bool completed = false;
+                while (!completed)
+                {
+                    var pendingOrder = await _repository.Get(newOrder.Id);
+                    if (pendingOrder.Status == Order.OrderStatus.Completed)
+                        completed = true;
+                    Thread.Sleep(100);
+                }
+                
+                return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
+
+                
+            }
+            catch
+            {
+                return StatusCode(500, "An error happened. Try again.");
+            }
+            
+            
+            
+
+            
             if (await _productServiceProductGateway.UpdateMany(productsToUpdate)) {
 
-                await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
+                //todo maybe revert await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
 
                 // Create order.
                 order.Status = Order.OrderStatus.Completed;
