@@ -123,7 +123,7 @@ namespace OrderApi.Controllers {
             Order? order = await _repository.Get(id);
             if (order != null && (order.Status != Order.OrderStatus.Completed || order.Status != Order.OrderStatus.Pending))
             {
-                return BadRequest("Order was cancelled as it was not completed");
+                return BadRequest("Order could not be cancelled as it was not completed");
             }
             //cancel order
             order.Status = Order.OrderStatus.Cancelled;
