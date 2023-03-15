@@ -2,10 +2,11 @@
     public class Order {
 
         public enum OrderStatus {
-            cancelled,
-            completed,
-            shipped,
-            paid
+            Cancelled,
+            Pending,
+            Completed,
+            Shipped,
+            Paid
         }
 
         public int Id { get; set; }
