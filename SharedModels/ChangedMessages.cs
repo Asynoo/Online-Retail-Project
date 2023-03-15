@@ -13,4 +13,12 @@
     {
         public int OrderId { get; set; }
     }
+
+    public class CreditStandingChangedMessage
+    {
+        public int CustomerId { get; set; }
+        
+        public  int CreditStanding { get; set; }
+
+    }
 }

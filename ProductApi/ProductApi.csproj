@@ -28,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\CustomerApi\CustomerApi.csproj" />
         <ProjectReference Include="..\SharedModels\SharedModels.csproj" />
     </ItemGroup>
 

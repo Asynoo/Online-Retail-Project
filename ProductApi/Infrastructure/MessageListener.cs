@@ -1,5 +1,6 @@
-﻿using EasyNetQ;
-using ProductApi.Data;
+﻿using CustomerApi.Data;
+using CustomerApi.Models;
+using EasyNetQ;
 using ProductApi.Models;
 using SharedModels;
 namespace ProductApi.Infrastructure {
@@ -25,8 +26,8 @@ namespace ProductApi.Infrastructure {
                     HandleOrderShipped, x => x.WithTopic("shipped"));
                 _bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiCancelled",
                     HandleOrderCancelled, x => x.WithTopic("cancelled"));
-                _bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiPaid",
-                    HandleOrderPaid, x => x.WithTopic("paid"));
+                _bus.PubSub.Subscribe<CreditStandingChangedMessage>("productApiPaid",
+                    HandleOrderPaidTwo, x => x.WithTopic("paid"));
                 // Block the thread so that it will not exit and stop subscribing.
                 lock (this) {
                     Monitor.Wait(this);
@@ -40,7 +41,7 @@ namespace ProductApi.Infrastructure {
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                var productRepos = services.GetService<IRepository<Product>>();
+                var productRepos = services.GetService<Data.IRepository<Product>>();
 
                 // Reserve items of ordered product (should be a single transaction).
                 // Beware that this operation is not idempotent.
@@ -90,7 +91,7 @@ namespace ProductApi.Infrastructure {
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                var productRepos = services.GetService<IRepository<Product>>();
+                var productRepos = services.GetService<Data.IRepository<Product>>();
 
                 // Ships(deletes from inventory) items of ordered product (should be a single transaction).
                 // Beware that this operation is not idempotent.
@@ -103,13 +104,15 @@ namespace ProductApi.Infrastructure {
                 }
             }
         }
+        
+        //todo solve the following two check OrderController [Put(Paid)]
         private void HandleOrderCancelled(OrderStatusChangedMessage message) {
             // A service scope is created to get an instance of the product repository.
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                var productRepos = services.GetService<IRepository<Product>>();
+                var productRepos = services.GetService<Data.IRepository<Product>>();
 
                 // Reserved items of ordered product is removed, as order is cancelled (should be a single transaction).
                 // Beware that this operation is not idempotent.
@@ -121,28 +124,24 @@ namespace ProductApi.Infrastructure {
                 }
             }
         }
-        private void HandleOrderPaid(OrderStatusChangedMessage message) {
+        private void HandleOrderPaidTwo(CreditStandingChangedMessage message) {
             // A service scope is created to get an instance of the product repository.
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                var productRepos = services.GetService<IRepository<Product>>();
+                var customerRepos = services.GetService<Data.IRepository<Customer>>();
 
-                // Paid for ordered product, removes items from stock (should be a single transaction).
+                // Paid for ordered product, increases customer rating (should be a single transaction).
                 // Beware that this operation is not idempotent.
-                foreach (OrderLine orderLine in message.OrderLines) {
-                    Task<Product?> product = productRepos.Get(orderLine.ProductId);
-                    if (product.Result == null) continue;
-                    product.Result.ItemsReserved -= orderLine.Quantity;
-                    product.Result.ItemsInStock -= orderLine.Quantity;
-                    productRepos.Edit(product.Result);
-
-                }
+                Task<Customer> customer = customerRepos.Get(message.CustomerId);
+                    customer.Result.creditStanding += message.CreditStanding;
+                    customerRepos.Edit(customer.Result); 
+                    
             }
         }
 
-        private static bool ProductAvailable(IList<OrderLine> orderLines, IRepository<Product> productRepo)
+        private static bool ProductAvailable(IList<OrderLine> orderLines, Data.IRepository<Product> productRepo)
         {
             foreach (OrderLine orderLine in orderLines)
             {

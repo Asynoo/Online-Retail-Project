@@ -20,5 +20,14 @@ namespace OrderApi.Infrastructure {
 
             await bus.PubSub.PublishAsync(message, topic);
         }
+        
+        public async Task CreditStandingChangedMessage(int customerId, int creditStanding, string topic) {
+            CreditStandingChangedMessage message = new CreditStandingChangedMessage {
+                CustomerId = customerId,
+                CreditStanding = creditStanding
+            };
+
+            await bus.PubSub.PublishAsync(message, topic);
+        }
     }
 }
