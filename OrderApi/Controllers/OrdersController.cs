@@ -12,7 +12,6 @@ namespace OrderApi.Controllers {
 
         private readonly IServiceGateway<ProductDto> _productServiceProductGateway;
 
-        //private readonly IRepository<Order> _repository;
         private readonly IRepository<Order> _repository;
 
 
@@ -74,8 +73,7 @@ namespace OrderApi.Controllers {
 
             if (await _productServiceProductGateway.UpdateMany(productsToUpdate)) {
 
-                await _messagePublisher.PublishOrderStatusChangedMessage(
-                    order.CustomerId, order.OrderLines, "completed");
+                await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
 
                 // Create order.
                 order.Status = Order.OrderStatus.completed;
@@ -91,30 +89,52 @@ namespace OrderApi.Controllers {
         // This action method cancels an order and publishes an OrderStatusChangedMessage
         // with topic set to "cancelled".
         [HttpPut("{id}/cancel")]
-        public IActionResult Cancel(int id) {
-            throw new NotImplementedException();
-
-            // Add code to implement this method.
+        public async Task<IActionResult> Cancel(int id)
+        {
+            Order? order = await _repository.Get(id);
+            if (order != null && order.Status != Order.OrderStatus.completed)
+            {
+                return BadRequest("Order was cancelled as it was not completed");
+            }
+            //cancel order
+            order.Status = Order.OrderStatus.cancelled;
+            await _repository.Edit(order);
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "cancelled");
+            return Ok(id);
         }
 
         // PUT orders/5/ship
         // This action method ships an order and publishes an OrderStatusChangedMessage.
         // with topic set to "shipped".
         [HttpPut("{id}/ship")]
-        public IActionResult Ship(int id) {
-            throw new NotImplementedException();
-
-            // Add code to implement this method.
+        public async Task<IActionResult> Ship(int id) {
+            Order? order = await _repository.Get(id);
+            if (order != null && order.Status != Order.OrderStatus.completed)
+            {
+                return BadRequest("Order could not be shipped as the status was not completed");
+            }
+            //cancel order
+            order.Status = Order.OrderStatus.shipped;
+            await _repository.Edit(order);
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "shipped");
+            return Ok(id);
         }
 
         // PUT orders/5/pay
         // This action method marks an order as paid and publishes a CreditStandingChangedMessage
         // (which have not yet been implemented), if the credit standing changes.
         [HttpPut("{id}/pay")]
-        public IActionResult Pay(int id) {
-            throw new NotImplementedException();
-
-            // Add code to implement this method.
+        public async Task<IActionResult> Pay(int id) {
+            Order? order = await _repository.Get(id);
+            if (order != null && order.Status != Order.OrderStatus.shipped)
+            {
+                return BadRequest("Order could not be paid as the status was not shipped");
+            }
+            //cancel order
+            order.Status = Order.OrderStatus.paid;
+            await _repository.Edit(order);
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
+            return Ok(id);
         }
     }
 }

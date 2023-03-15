@@ -1,3 +1,4 @@
+using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
 using ProductApi.Infrastructure;
@@ -52,7 +53,7 @@ using (IServiceScope scope = app.Services.CreateScope()) {
 
 // Create a message listener in a separate thread.
 Task.Factory.StartNew(() =>
-    new MessageListener(app.Services, cloudAMQPConnectionString).Start());
+    new MessageListener(app.Services, cloudAMQPConnectionString ).Start());
 
 
 //app.UseHttpsRedirection();
