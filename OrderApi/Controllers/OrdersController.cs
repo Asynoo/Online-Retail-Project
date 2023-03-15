@@ -162,8 +162,7 @@ namespace OrderApi.Controllers {
             //cancel order
             order.Status = Order.OrderStatus.Paid;
             await _repository.Edit(order);
-            //await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
-            await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid"); //todo make this increase the customer credit standing
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
             return Ok(id);
         }
     }
