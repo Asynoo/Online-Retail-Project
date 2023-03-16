@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
 using OrderApi.Infrastructure;
-using RestSharp;
+using OrderApi.Models;
 using SharedModels;
 namespace OrderApi.Controllers {
     [ApiController]
     [Route("[controller]")]
     public class OrdersController : ControllerBase {
+        private readonly IConverter<OrderLine, OrderLineDto> _orderLineConverter = new OrderLineConverter();
+
         private readonly IServiceGateway<CustomerDto> _customerServiceGateway;
         private readonly IMessagePublisher _messagePublisher;
 
@@ -40,7 +42,7 @@ namespace OrderApi.Controllers {
 
         // POST orders
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Order order) {
+        public async Task<IActionResult> Post([FromBody] OrderPostBindingModel order) {
             List<ProductDto>? orderedProducts = await _productServiceProductGateway.GetAll();
             if (orderedProducts == null || !orderedProducts.Any()) {
                 return NotFound("No products found");
@@ -59,112 +61,105 @@ namespace OrderApi.Controllers {
                 return NotFound("Customer not found");
             }
 
-            List<ProductDto> productsToUpdate = new();
             //Verify that each ordered product type has enough items on stock
-            foreach (OrderLine orderLine in order.OrderLines) {
+            foreach (OrderLinePostBindingModel orderLine in order.OrderLines) {
                 ProductDto matchingProduct = orderedProducts.First(y => y.Id == orderLine.ProductId);
                 if (orderLine.Quantity > matchingProduct.ItemsInStock) {
                     return BadRequest($"Product: {matchingProduct.Name} does not have enough items on stock!");
                 }
-                matchingProduct.ItemsReserved += orderLine.Quantity;
-                productsToUpdate.Add(matchingProduct);
-            }
-            // Once the stock is verified, reserve these products and update the new amount in the products API
-
-            
-            //todo i tried adding this to see if i could post an order.... doesnt work
-            try
-            {
-                order.Status = Order.OrderStatus.Pending;
-                Order newOrder = await _repository.Add(order);
-                
-                await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
-
-                bool completed = false;
-                while (!completed)
-                {
-                    var pendingOrder = await _repository.Get(newOrder.Id);
-                    if (pendingOrder.Status == Order.OrderStatus.Completed)
-                        completed = true;
-                    Thread.Sleep(100);
-                }
-                
-                return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
-            }
-            catch
-            {
-                return StatusCode(500, "An error happened. Try again.");
             }
             
+            // Once the stock is verified, reserve these products and update the new amount in the products API using messaging
+            Order orderModel = new(order);
+            orderModel.Status = OrderStatus.Pending;
+            Order newOrderDto = await _repository.Add(orderModel);
             
-            //todo maybe revert back to this by commenting out the above
+            await _messagePublisher.PublishOrderStatusChangedMessage(orderModel.CustomerId, orderModel.Id ,orderModel.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "completed");
 
-            
-            if (await _productServiceProductGateway.UpdateMany(productsToUpdate)) {
-
-                 await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines, "completed");
-
-                // Create order.
-                order.Status = Order.OrderStatus.Completed;
-                Order newOrder = await _repository.Add(order);
-                return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
+            bool completed = false;
+            //Wait for the message listener to update the order to completed
+            while (!completed) {
+                Order? pendingOrder = await _repository.Get(newOrderDto.Id);
+                if (pendingOrder!.Status == OrderStatus.Completed)
+                    completed = true;
+                Thread.Sleep(100);
             }
-
-            // If the order could not be created, "return no content".
-            return NoContent();
+            
+            return CreatedAtRoute("GetOrder", new { id = newOrderDto.Id }, newOrderDto);
         }
 
-        // PUT orders/5/cancel
-        // This action method cancels an order and publishes an OrderStatusChangedMessage
-        // with topic set to "cancelled".
+        /// <summary>
+        /// This action method cancels an order and publishes an OrderStatusChangedMessage
+        /// with topic set to "cancelled".
+        /// </summary>
+        /// <param name="id">Id of the order</param>
+        /// <returns>The Updated order model</returns>
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
             Order? order = await _repository.Get(id);
-            if (order.Status != Order.OrderStatus.Completed || order.Status != Order.OrderStatus.Pending)
+            if (order is null)
+            {
+                return NotFound($"Order with ID{id} not found");
+            }
+            if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Pending)
             {
                 return BadRequest("Order could not be cancelled as it was not completed");
             }
             //cancel order
-            order.Status = Order.OrderStatus.Cancelled;
+            order.Status = OrderStatus.Cancelled;
             await _repository.Edit(order);
-            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "cancelled");
-            return Ok(id);
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.Id, order.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "cancelled");
+            return Ok(order);
         }
-
-        // PUT orders/5/ship
-        // This action method ships an order and publishes an OrderStatusChangedMessage.
-        // with topic set to "shipped".
+        
+        /// <summary>
+        /// This action method ships an order and publishes an OrderStatusChangedMessage
+        /// with topic set to "shipped".
+        /// </summary>
+        /// <param name="id">Id of the order</param>
+        /// <returns>The Updated order model</returns>
         [HttpPut("{id}/ship")]
         public async Task<IActionResult> Ship(int id) {
             Order? order = await _repository.Get(id);
-            if (order.Status != Order.OrderStatus.Completed)
+            if (order is null)
+            {
+                return NotFound($"Order with ID{id} not found");
+            }
+            if (order.Status != OrderStatus.Completed)
             {
                 return BadRequest("Order could not be shipped as the status was not completed");
             }
             //cancel order
-            order.Status = Order.OrderStatus.Shipped;
+            order.Status = OrderStatus.Shipped;
             await _repository.Edit(order);
-            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "shipped");
-            return Ok(id);
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.Id, order.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "shipped");
+            return Ok(order);
         }
 
-        // PUT orders/5/pay
-        // This action method marks an order as paid and publishes a CreditStandingChangedMessage
-        // (which have not yet been implemented), if the credit standing changes.
+        /// <summary>
+        ///  This action method marks an order as paid and publishes a CreditStandingChangedMessage<br/>
+        ///  (which have not yet been implemented), if the credit standing changes.
+        /// </summary>
+        /// <param name="id">Id of the order</param>
+        /// <returns>The updated order</returns>
         [HttpPut("{id}/pay")]
         public async Task<IActionResult> Pay(int id) {
             Order? order = await _repository.Get(id);
-            if (order.Status != Order.OrderStatus.Shipped)
+            if (order is null)
+            {
+                return NotFound($"Order with ID{id} not found");
+            }
+            if (order.Status != OrderStatus.Shipped)
             {
                 return BadRequest("Order could not be paid as the status was not shipped");
             }
             //cancel order
-            order.Status = Order.OrderStatus.Paid;
+            order.Status = OrderStatus.Paid;
             await _repository.Edit(order);
             //await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
             await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid"); //todo make this increase the customer credit standing
-            return Ok(id);
+            return Ok(order);
         }
     }
 }

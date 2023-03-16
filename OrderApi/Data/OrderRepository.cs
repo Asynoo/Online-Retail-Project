@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using OrderApi.Models;
 using SharedModels;
 namespace OrderApi.Data {
     public class OrderRepository : IRepository<Order> {

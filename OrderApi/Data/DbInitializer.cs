@@ -1,4 +1,5 @@
-﻿using SharedModels;
+﻿using OrderApi.Models;
+using SharedModels;
 namespace OrderApi.Data {
     public class DbInitializer : IDbInitializer {
         // This method will create and seed the database.
@@ -11,24 +12,24 @@ namespace OrderApi.Data {
                 return; // DB has been seeded
             }
 
-            var orders = new List<Order> {
+            List<Order> orders = new() {
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Pending, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = OrderStatus.Pending, OrderLines = new List<OrderLine> {
                         new() { ProductId = 1, Quantity = 2 }
                     }
                 },
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Completed, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = OrderStatus.Completed, OrderLines = new List<OrderLine> {
                         new() { ProductId = 1, Quantity = 1 }
                     }
                 },
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Shipped, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = OrderStatus.Shipped, OrderLines = new List<OrderLine> {
                         new() { ProductId = 2, Quantity = 1 }
                     }
                 },
                 new() {
-                    Date = DateTime.Today, CustomerId = 1, Status = Order.OrderStatus.Paid, OrderLines = new List<OrderLine> {
+                    Date = DateTime.Today, CustomerId = 1, Status = OrderStatus.Paid, OrderLines = new List<OrderLine> {
                         new() { ProductId = 2, Quantity = 1 }
                     }
                 }

@@ -2,31 +2,32 @@
 using SharedModels;
 namespace OrderApi.Infrastructure {
     public class MessagePublisher : IMessagePublisher, IDisposable {
-        private readonly IBus bus;
+        private readonly IBus _bus;
 
         public MessagePublisher(string connectionString) {
-            bus = RabbitHutch.CreateBus(connectionString);
+            _bus = RabbitHutch.CreateBus(connectionString);
         }
 
         public void Dispose() {
-            bus.Dispose();
+            _bus.Dispose();
         }
 
-        public async Task PublishOrderStatusChangedMessage(int? customerId, IList<OrderLine> orderLines, string topic) {
-            OrderStatusChangedMessage message = new OrderStatusChangedMessage {
+        public async Task PublishOrderStatusChangedMessage(int? customerId, int orderId, IList<OrderLineDto> orderLines, string topic) {
+            OrderStatusChangedMessage message = new() {
                 CustomerId = customerId,
+                OrderId = orderId,
                 OrderLines = orderLines
             };
 
-            await bus.PubSub.PublishAsync(message, topic);
+            await _bus.PubSub.PublishAsync(message, topic);
         }
         
         public async Task CreditStandingChangedMessage(int customerId, int creditStanding, string topic) {
-            CreditStandingChangedMessage message = new CreditStandingChangedMessage {
+            CreditStandingChangedMessage message = new() {
                 CustomerId = customerId,
                 CreditStanding = creditStanding
             };
-            await bus.PubSub.PublishAsync(message, topic);
+            await _bus.PubSub.PublishAsync(message, topic);
         }
     }
 }
