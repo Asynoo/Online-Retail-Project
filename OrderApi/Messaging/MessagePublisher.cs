@@ -1,6 +1,8 @@
 ﻿using EasyNetQ;
+using OrderApi.Infrastructure;
 using SharedModels;
-namespace OrderApi.Infrastructure {
+
+namespace OrderApi.Messaging {
     public class MessagePublisher : IMessagePublisher, IDisposable {
         private readonly IBus _bus;
 
@@ -9,6 +11,7 @@ namespace OrderApi.Infrastructure {
         }
 
         public void Dispose() {
+            GC.SuppressFinalize(this);
             _bus.Dispose();
         }
 

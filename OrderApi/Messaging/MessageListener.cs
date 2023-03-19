@@ -1,8 +1,9 @@
 using EasyNetQ;
 using OrderApi.Data;
+using OrderApi.Models;
 using SharedModels;
 
-namespace OrderApi.Infrastructure; 
+namespace OrderApi.Messaging; 
 
 public class MessageListener {
         private readonly string _connectionString;
@@ -19,18 +20,14 @@ public class MessageListener {
 
         public void Start() {
             using (_bus = RabbitHutch.CreateBus(_connectionString)) {
-                _bus.PubSub.SubscribeAsync<OrderTransactionMessage>(
-                    "productApiCompleted",
-                    message => Task.Factory.StartNew(() => HandleOrderCompleted(message)),
-                    x => x.WithTopic("completed")
+                _bus.PubSub.SubscribeAsync<OrderTransactionMessage>("productApiCompleted",
+                    message => Task.Factory.StartNew(() => HandleOrderCompleted(message))
                 );
                 _bus.PubSub.SubscribeAsync<OrderTransactionMessage>("productApiShipped",
-                    message => Task.Factory.StartNew(() => HandleOrderShipped(message)),
-                    x => x.WithTopic("shipped")
+                    message => Task.Factory.StartNew(() => HandleOrderShipped(message))
                 );
                 _bus.PubSub.SubscribeAsync<OrderTransactionMessage>("productApiCancelled",
-                    message => Task.Factory.StartNew(() => HandleOrderCancelled(message)),
-                    x => x.WithTopic("cancelled")
+                    message => Task.Factory.StartNew(() => HandleOrderCancelled(message))
                 );
                 // Block the thread so that it will not exit and stop subscribing.
                 lock (this) {
@@ -45,22 +42,24 @@ public class MessageListener {
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                IRepository<OrderDto>? orderRepository = services.GetService<IRepository<OrderDto>>();
+                IRepository<Order>? orderRepository = services.GetService<IRepository<Order>>();
 
-                // Check if the transaction was successful
-                if (message.Successful) {
-                    OrderDto? order = await orderRepository.Get(message.OrderId);
-                    if (order != null) {
+
+                Order? order = await orderRepository.Get(message.OrderId);
+                if (order != null) {
+                    if (message.Successful) {
                         order.Status = OrderStatus.Completed;
+                        Console.WriteLine($"Set order id: {message.OrderId} as completed");
                         await orderRepository.Edit(order);
                     }
-                    // Throw exception if not found
                     else {
-                        throw new TaskCanceledException("Attempted to edit a nonexistent order");
+                        Console.WriteLine($"Failed to create order id: {message.OrderId}");
+                        await orderRepository.Remove(message.OrderId);
                     }
                 }
+                // Throw exception if not found
                 else {
-                    throw new TaskCanceledException("Failed to update products");
+                    Console.WriteLine("Attempted to edit a nonexistent order");
                 }
             }
         }
@@ -71,11 +70,11 @@ public class MessageListener {
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                IRepository<OrderDto>? orderRepository = services.GetService<IRepository<OrderDto>>();
+                IRepository<Order>? orderRepository = services.GetService<IRepository<Order>>();
 
                 // Check if the transaction was successful
                 if (message.Successful) {
-                    OrderDto? order = await orderRepository.Get(message.OrderId);
+                    Order? order = await orderRepository.Get(message.OrderId);
                     if (order != null) {
                         order.Status = OrderStatus.Shipped;
                         await orderRepository.Edit(order);
@@ -97,11 +96,11 @@ public class MessageListener {
             // also be disposed.
             using (IServiceScope scope = _provider.CreateScope()) {
                 IServiceProvider services = scope.ServiceProvider;
-                IRepository<OrderDto>? orderRepository = services.GetService<IRepository<OrderDto>>();
+                IRepository<Order>? orderRepository = services.GetService<IRepository<Order>>();
 
                 // Check if the transaction was successful
                 if (message.Successful) {
-                    OrderDto? order = await orderRepository.Get(message.OrderId);
+                    Order? order = await orderRepository.Get(message.OrderId);
                     if (order != null) {
                         order.Status = OrderStatus.Cancelled;
                         await orderRepository.Edit(order);

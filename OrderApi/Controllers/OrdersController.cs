@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
 using OrderApi.Infrastructure;
+using OrderApi.Messaging;
 using OrderApi.Models;
 using SharedModels;
 namespace OrderApi.Controllers {
@@ -68,23 +69,34 @@ namespace OrderApi.Controllers {
                     return BadRequest($"Product: {matchingProduct.Name} does not have enough items on stock!");
                 }
             }
-            
+
             // Once the stock is verified, reserve these products and update the new amount in the products API using messaging
             Order orderModel = new(order);
             orderModel.Status = OrderStatus.Pending;
             Order newOrderDto = await _repository.Add(orderModel);
-            
-            await _messagePublisher.PublishOrderStatusChangedMessage(orderModel.CustomerId, orderModel.Id ,orderModel.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "completed");
+
+            await _messagePublisher.PublishOrderStatusChangedMessage(orderModel.CustomerId, orderModel.Id,
+                orderModel.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "completed");
 
             bool completed = false;
+            int timeoutTries = 50;
             //Wait for the message listener to update the order to completed
-            while (!completed) {
+            while (!completed && timeoutTries > 0) {
                 Order? pendingOrder = await _repository.Get(newOrderDto.Id);
-                if (pendingOrder!.Status == OrderStatus.Completed)
+                // If the order is null, it means that it was deleted by the message listener
+                if (pendingOrder is null) {
+                    return BadRequest("Failed to create order!");
+                }
+
+                if (pendingOrder.Status == OrderStatus.Completed)
                     completed = true;
-                Thread.Sleep(100);
+                Thread.Sleep(250);
+                timeoutTries--;
             }
-            
+            if (timeoutTries <= 0) {
+                await _repository.Remove(newOrderDto.Id);
+                return BadRequest("Failed to create order!");
+            }
             return CreatedAtRoute("GetOrder", new { id = newOrderDto.Id }, newOrderDto);
         }
 

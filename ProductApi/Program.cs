@@ -1,7 +1,6 @@
-using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
-using ProductApi.Infrastructure;
+using ProductApi.Messaging;
 using ProductApi.Models;
 using SharedModels;
 
@@ -10,7 +9,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 // Remember to replace this connectionstring with your own.
 string cloudAMQPConnectionString =
-    "host=cow.rmq2.cloudamqp.com.com;virtualHost=lylmzobc;username=lylmzobc;password=Eqr45bco!";
+    "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=USE ONLY ONE .COM YOU PEPEGA";
 
 
 // Use this connection string if you want to run RabbitMQ server as a container
@@ -26,7 +25,7 @@ builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
-
+ 
 // Register ProductConverter for dependency injection
 builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
 

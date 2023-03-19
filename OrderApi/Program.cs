@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OrderApi.Data;
 using OrderApi.Infrastructure;
+using OrderApi.Messaging;
 using OrderApi.Models;
 using SharedModels;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,7 @@ string productServiceBaseUrl = "http://productapi/products/";
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 // Remember to replace this connectionstring with your own.
 string cloudAMQPConnectionString =
-    "host=cow.rmq2.cloudamqp.com.com;virtualHost=lylmzobc;username=lylmzobc;password=Fix your shit mr. el Rolfadur";
+    "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=USE ONLY ONE .COM YOU PEPEGA";
 
 // Add services to the container.
 

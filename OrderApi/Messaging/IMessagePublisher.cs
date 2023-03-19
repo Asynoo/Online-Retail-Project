@@ -1,5 +1,6 @@
 ﻿using SharedModels;
-namespace OrderApi.Infrastructure {
+
+namespace OrderApi.Messaging {
     public interface IMessagePublisher {
         Task PublishOrderStatusChangedMessage(
             int? customerId,

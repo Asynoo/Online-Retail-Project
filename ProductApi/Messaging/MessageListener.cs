@@ -3,7 +3,7 @@ using ProductApi.Data;
 using ProductApi.Models;
 using SharedModels;
 
-namespace ProductApi.Infrastructure {
+namespace ProductApi.Messaging {
     public class MessageListener {
         private readonly string _connectionString;
         private readonly IServiceProvider _provider;
@@ -61,14 +61,17 @@ namespace ProductApi.Infrastructure {
                         }
                         // Publish reject message if product doesn't exist
                         else {
+                            Console.WriteLine($"Reservation of products for order {message.OrderId} failed.");
                             await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
                             return;
                         }
                     }
+                    Console.WriteLine($"Reservation of products for order {message.OrderId} successful.");
                     // All products have been updated, return success message
                     await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = true });
                 }
                 else {
+                    Console.WriteLine($"Reservation of products for order {message.OrderId} failed.");
                     await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
                 }
             }
@@ -93,10 +96,12 @@ namespace ProductApi.Infrastructure {
                     }
                     // Publish reject message if product doesn't exist
                     else {
+                        Console.WriteLine($"Shipping of reserved products for order {message.OrderId} failed.");
                         await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
                         return;
                     }
-                }
+                }                       
+                Console.WriteLine($"Shipping of reserved products for order {message.OrderId} successful.");
                 // All products have been updated, return success message
                 await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = true });
             }
@@ -120,10 +125,12 @@ namespace ProductApi.Infrastructure {
                     }
                     // Publish reject message if product doesn't exist
                     else {
+                        Console.WriteLine($"Cancellation of reserved products for order {message.OrderId} failed.");
                         await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
                         return;
                     }
                 }
+                Console.WriteLine($"Cancellation of reserved products for order {message.OrderId} successful.");
                 // All products have been updated, return success message
                 await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = true });
             }
