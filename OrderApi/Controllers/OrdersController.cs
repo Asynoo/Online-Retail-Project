@@ -75,6 +75,8 @@ namespace OrderApi.Controllers {
             orderModel.Status = OrderStatus.Pending;
             Order newOrderDto = await _repository.Add(orderModel);
 
+            Console.WriteLine("Writeline debug "+newOrderDto.Status + "id:" + newOrderDto.Id);
+            
             await _messagePublisher.PublishOrderStatusChangedMessage(orderModel.CustomerId, orderModel.Id,
                 orderModel.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "completed");
 
@@ -84,18 +86,19 @@ namespace OrderApi.Controllers {
             while (!completed && timeoutTries > 0) {
                 Order? pendingOrder = await _repository.Get(newOrderDto.Id);
                 // If the order is null, it means that it was deleted by the message listener
-                if (pendingOrder is null) {
-                    return BadRequest("Failed to create order!");
-                }
+                Console.WriteLine("Writeline debug "+pendingOrder.Status + "id:" + pendingOrder.Id);
 
+                if (pendingOrder is null) {
+                    return BadRequest("Failed to create order! error 1");
+                }
                 if (pendingOrder.Status == OrderStatus.Completed)
                     completed = true;
                 Thread.Sleep(250);
                 timeoutTries--;
             }
-            if (timeoutTries <= 0) {
+            if ( !completed) {
                 await _repository.Remove(newOrderDto.Id);
-                return BadRequest("Failed to create order!");
+                return BadRequest("Failed to create order! error 2");
             }
             return CreatedAtRoute("GetOrder", new { id = newOrderDto.Id }, newOrderDto);
         }
@@ -145,7 +148,8 @@ namespace OrderApi.Controllers {
             //cancel order
             order.Status = OrderStatus.Shipped;
             await _repository.Edit(order);
-            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.Id, order.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "shipped");
+            await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.Id, 
+                order.OrderLines.Select(x => _orderLineConverter.Convert(x)).ToList(), "shipped");
             return Ok(order);
         }
 
@@ -171,7 +175,10 @@ namespace OrderApi.Controllers {
             await _repository.Edit(order);
             //await _messagePublisher.PublishOrderStatusChangedMessage(order.CustomerId, order.OrderLines.ToList(), "paid");
             await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid"); //todo make this increase the customer credit standing
+            Console.WriteLine("Writeline credit debug "+ order.Status  );
+
             return Ok(order);
+            
         }
     }
 }

@@ -15,7 +15,7 @@ string productServiceBaseUrl = "http://productapi/products/";
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 // Remember to replace this connectionstring with your own.
 string cloudAMQPConnectionString =
-    "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=USE ONLY ONE .COM YOU PEPEGA";
+    "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
 
 // Add services to the container.
 

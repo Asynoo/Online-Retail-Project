@@ -33,6 +33,10 @@ namespace ProductApi.Messaging {
                     message => Task.Factory.StartNew(() => HandleOrderCancelled(message)),
                     x => x.WithTopic("cancelled")
                 );
+                _bus.PubSub.SubscribeAsync<CreditStandingChangedMessage>("productApiPaid",
+                    message => Task.Factory.StartNew(() => HandleOrderPaidTwo(message)),
+                    x => x.WithTopic("paid")
+                );
                 // Block the thread so that it will not exit and stop subscribing.
                 lock (this) {
                     Monitor.Wait(this);
@@ -97,13 +101,13 @@ namespace ProductApi.Messaging {
                     // Publish reject message if product doesn't exist
                     else {
                         Console.WriteLine($"Shipping of reserved products for order {message.OrderId} failed.");
-                        await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
+                        //await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = false });
                         return;
                     }
                 }                       
                 Console.WriteLine($"Shipping of reserved products for order {message.OrderId} successful.");
                 // All products have been updated, return success message
-                await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = true });
+                //await _bus.PubSub.PublishAsync(new OrderTransactionMessage { OrderId = message.OrderId, Successful = true});
             }
         }
 
@@ -140,14 +144,35 @@ namespace ProductApi.Messaging {
             // A service scope is created to get an instance of the product repository.
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
-            using (IServiceScope scope = _provider.CreateScope()) {
-                IServiceProvider services = scope.ServiceProvider;
-                IRepository<CustomerDto>? customerRepos = services.GetService<IRepository<CustomerDto>>();
-                // Paid for ordered product, increases customer rating (should be a single transaction).
-                // Beware that this operation is not idempotent.
-                Task<CustomerDto> customer = customerRepos.Get(message.CustomerId);
-                customer.Result.creditStanding += message.CreditStanding;
-                customerRepos.Edit(customer.Result);
+            Console.WriteLine("Writeline credit debug, does he know " + message.CustomerId  );
+
+            try
+            {
+                using (IServiceScope scope = _provider.CreateScope())
+                {
+                    IServiceProvider services = scope.ServiceProvider;
+                    IRepository<CustomerDto>? customerRepos = services.GetService<IRepository<CustomerDto>>();
+                    
+                    Console.WriteLine("Writeline credit debug " +
+                                      customerRepos);
+                    Console.WriteLine("Writeline credit debug " +
+                                      customerRepos.Get(message.CustomerId).Result.creditStanding);
+                    // Paid for ordered product, increases customer rating (should be a single transaction).
+                    // Beware that this operation is not idempotent.
+
+                    Task<CustomerDto> customer = customerRepos.Get(message.CustomerId);
+                    Console.WriteLine("Writeline credit debug " + customer.Result.creditStanding);
+                    customer.Result.creditStanding += message.CreditStanding;
+                    customerRepos.Edit(customer.Result);
+                    Console.WriteLine("Writeline credit debug " + customer.Result.creditStanding);
+                    Console.WriteLine("Writeline credit debug " +
+                                      customerRepos.Get(message.CustomerId).Result.creditStanding);
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Writeline credit debug "+ e.Message + "\n" + e.StackTrace );
             }
         }
 

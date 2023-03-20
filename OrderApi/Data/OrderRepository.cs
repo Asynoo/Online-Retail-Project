@@ -25,7 +25,9 @@ namespace OrderApi.Data {
         }
 
         async Task<Order?> IRepository<Order>.Get(int id) {
-            return await _db.Orders.Include(o => o.OrderLines).FirstOrDefaultAsync(o => o.Id == id);
+            Order order = await _db.Orders.Include(o => o.OrderLines).FirstOrDefaultAsync(o => o.Id == id);
+            _db.Entry<Order>(order).Reload();
+            return order;
         }
 
         async Task<IEnumerable<Order>> IRepository<Order>.GetAll() {
