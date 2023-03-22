@@ -31,6 +31,14 @@ namespace OrderApi.Controllers {
             return await _repository.GetAll();
         }
 
+        // GET: orders for customer
+        [HttpGet("customer/{id:int}")]
+        public async Task<IEnumerable<Order>> GetForCustomer(int id) {
+            //This should have its own repo call, but I'm lazy and this project is a proof of concept with a small dataset
+             IEnumerable<Order> orders = await _repository.GetAll(); 
+             return orders.Where(x => x.CustomerId == id);
+        }
+
         // GET orders/5
         [HttpGet("{id:int}", Name = "GetOrder")]
         public async Task<IActionResult> Get(int id) {
