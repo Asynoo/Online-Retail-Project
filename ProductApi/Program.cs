@@ -7,9 +7,7 @@ using SharedModels;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
-// Remember to replace this connectionstring with your own.
-string cloudAMQPConnectionString =
-    "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
+const string cloudAmqpConnectionString = "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
 
 
 // Use this connection string if you want to run RabbitMQ server as a container
@@ -52,7 +50,7 @@ using (IServiceScope scope = app.Services.CreateScope()) {
 
 // Create a message listener in a separate thread.
 Task.Factory.StartNew(() =>
-    new MessageListener(app.Services, cloudAMQPConnectionString ).Start());
+    new MessageListener(app.Services, cloudAmqpConnectionString ).Start());
 
 
 //app.UseHttpsRedirection();

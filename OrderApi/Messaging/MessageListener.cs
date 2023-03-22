@@ -65,7 +65,7 @@ public class MessageListener {
                     }
                     else
                     {
-                        Console.WriteLine($"Failed to create order id: {message.OrderId}");
+                        Console.WriteLine($"Failed to edit order id: {message.OrderId}");
                         await orderRepository.Remove(message.OrderId);
                     }
                 }

@@ -29,4 +29,10 @@
       <ProjectReference Include="..\SharedModels\SharedModels.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="EasyNetQ">
+        <HintPath>..\..\..\.nuget\packages\easynetq\7.4.3\lib\netstandard2.0\EasyNetQ.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

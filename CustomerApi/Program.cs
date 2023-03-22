@@ -1,11 +1,15 @@
 using CustomerApi.Data;
+using CustomerApi.Messaging;
 using CustomerApi.Models;
 using Microsoft.EntityFrameworkCore;
 using SharedModels;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
+const string cloudAmqpConnectionString = "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
+
+// Add services to the container.1
 
 builder.Services.AddDbContext<CustomerApiContext>(opt => opt.UseInMemoryDatabase("CustomerDb"));
 
@@ -38,6 +42,10 @@ using (IServiceScope scope = app.Services.CreateScope()) {
     IDbInitializer? dbInitializer = services.GetService<IDbInitializer>();
     dbInitializer.Initialize(dbContext);
 }
+
+// Create a message listener in a separate thread.
+Task.Factory.StartNew(() =>
+    new MessageListener(app.Services, cloudAmqpConnectionString ).Start());
 
 //app.UseHttpsRedirection();
 
