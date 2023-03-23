@@ -13,8 +13,9 @@ namespace CustomerApi.Data {
         }
 
         async Task<Customer?> IRepository<Customer>.Get(int id) {
-            Customer customer = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
-            _db.Entry<Customer>(customer).Reload();
+            Customer? customer = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer is null) return null;
+            await _db.Entry(customer).ReloadAsync();
             return customer;
         }
 
