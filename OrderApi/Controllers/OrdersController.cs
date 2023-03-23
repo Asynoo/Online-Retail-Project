@@ -71,8 +71,7 @@ namespace OrderApi.Controllers {
             }
             
             //Verify that the customer has enough credit
-            if (orderCustomer.creditStanding <= 0) {
-                //TODO I have no idea what credit standing does, help
+            if (orderCustomer.creditStanding > 100) {
                 return BadRequest($"Customer: {orderCustomer.Name} does not have enough credit standing to make an order!");
             }
             
