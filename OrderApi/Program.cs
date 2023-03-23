@@ -10,7 +10,10 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // The product service (running as a container) listens on this URL for HTTP requests
 // from other services specified in the docker compose file (which in this solution is
 // the order service).
-string productServiceBaseUrl = "http://productapi/products/";
+//string productServiceBaseUrl = "http://productapi/products/";
+string productServiceBaseUrl = "http://localhost:5298/products/";
+//string customerServiceBaseUrl = "http://customerapi/customer/";
+string customerServiceBaseUrl = "http://localhost:5057/customer/";
 
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 // Remember to replace this connectionstring with your own.
@@ -33,7 +36,7 @@ builder.Services.AddSingleton<IServiceGateway<ProductDto>>(new
 
 // Register customer service gateway for dependency injection
 builder.Services.AddSingleton<IServiceGateway<CustomerDto>>(new
-    CustomerServiceGateway(productServiceBaseUrl));
+    CustomerServiceGateway(customerServiceBaseUrl));
 
 // Register MessagePublisher (a messaging gateway) for dependency injection
 builder.Services.AddSingleton<IMessagePublisher>(new
