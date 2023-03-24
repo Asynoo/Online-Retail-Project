@@ -33,8 +33,10 @@ namespace ProductApi.Messaging {
                     message => Task.Factory.StartNew(() => HandleOrderCancelled(message)),
                     x => x.WithTopic("cancelled")
                 );
-                _bus.PubSub.SubscribeAsync<CreditStandingChangedMessage>("productApiPaid",
-                    message => Task.Factory.StartNew(() => HandleOrderPaidTwo(message)),
+                _bus.PubSub.SubscribeAsync<CreditStandingChangedMessage>(
+                    "productApiPaid",
+                    message => Task.Factory.StartNew(
+                        () => HandleOrderPaidTwo(message)),
                     x => x.WithTopic("paid")
                 );
                 // Block the thread so that it will not exit and stop subscribing.
@@ -145,7 +147,7 @@ namespace ProductApi.Messaging {
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
             Console.WriteLine("Writeline credit debug, does he know " + message.CustomerId  );
-
+        
             try
             {
                 using (IServiceScope scope = _provider.CreateScope())
@@ -159,7 +161,7 @@ namespace ProductApi.Messaging {
                                       customerRepos.Get(message.CustomerId).Result.creditStanding);
                     // Paid for ordered product, increases customer rating (should be a single transaction).
                     // Beware that this operation is not idempotent.
-
+        
                     Task<CustomerDto> customer = customerRepos.Get(message.CustomerId);
                     Console.WriteLine("Writeline credit debug " + customer.Result.creditStanding);
                     customer.Result.creditStanding += message.CreditStanding;
@@ -167,7 +169,7 @@ namespace ProductApi.Messaging {
                     Console.WriteLine("Writeline credit debug " + customer.Result.creditStanding);
                     Console.WriteLine("Writeline credit debug " +
                                       customerRepos.Get(message.CustomerId).Result.creditStanding);
-
+        
                 }
             }
             catch (Exception e)

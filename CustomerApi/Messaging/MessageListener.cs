@@ -20,8 +20,10 @@ namespace CustomerApi.Messaging {
 
         public void Start() {
             using (_bus = RabbitHutch.CreateBus(_connectionString)) {
-                _bus.PubSub.SubscribeAsync<CreditStandingChangedMessage>("productApiPaid",
-                    message => Task.Factory.StartNew(() => HandleOrderPaid(message)),
+                _bus.PubSub.SubscribeAsync<CreditStandingChangedMessage>(
+                    "productApiPaid",
+                    message => Task.Factory.StartNew(
+                        () => HandleOrderPaid(message)),
                     x => x.WithTopic("paid")
                 );
                 // Block the thread so that it will not exit and stop subscribing.
@@ -35,6 +37,7 @@ namespace CustomerApi.Messaging {
             // A service scope is created to get an instance of the product repository.
             // When the service scope is disposed, the product repository instance will
             // also be disposed.
+            Console.WriteLine("youve reached this far");
             try {
                 using (IServiceScope scope = _provider.CreateScope())
                 {
@@ -49,7 +52,7 @@ namespace CustomerApi.Messaging {
                         return;
                     }
                     customer.creditStanding += message.CreditStanding;
-                    await customerRepository.Edit(customer);
+                    customerRepository.Edit(customer);
                     Console.WriteLine($"Update of credit standing for customer {message.CustomerId} successful.");
                     //TODO do we want to send a message back perhaps?
                 }

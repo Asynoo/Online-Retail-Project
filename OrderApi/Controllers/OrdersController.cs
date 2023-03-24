@@ -187,7 +187,10 @@ namespace OrderApi.Controllers {
             }
             order.Status = OrderStatus.Paid;
             await _repository.Edit(order);
-            await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid"); //todo make this increase the customer credit standing
+            Console.WriteLine("did you send this?");
+            await _messagePublisher.CreditStandingChangedMessage(order.CustomerId, 100 , "paid");
+            Console.WriteLine("did you send this? customer was: " + order.CustomerId);
+
 
             return Ok(order);
             
