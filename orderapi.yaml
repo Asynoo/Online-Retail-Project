@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: orderapi
-        image: onlineretailproject/orderapi:latest
+        image: nitrozeus1/orderapi:latest
 ---
 apiVersion: v1
 kind: Service

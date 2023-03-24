@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: customerapi
-        image: onlineretailproject/customerapi:latest
+        image: nitrozeus1/customerapi:latest
 ---
 apiVersion: v1
 kind: Service
