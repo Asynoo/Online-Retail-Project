@@ -1,8 +1,5 @@
-﻿using System;
-namespace OrderApi.Models
-{
-    public class Product
-    {
+﻿namespace SharedModels {
+    public class ProductDto {
         public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }

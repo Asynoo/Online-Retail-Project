@@ -1,28 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using CustomerApi.Models;
+﻿using CustomerApi.Models;
+namespace CustomerApi.Data {
+    public class DbInitializer : IDbInitializer {
+        public void Initialize(CustomerApiContext context) {
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
 
-namespace CustomerApi.Data;
+            if (context.Customers.Any()) {
+                return;
+            }
 
-public class DbInitializer : IDbInitializer
-{
-    public void Initialize(CustomerApiContext context)
-    {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+            var customers = new List<Customer> {
+                new() { Name = "Testysen", Email = "testysen@email.com", Phone = "+4512345678", BillingAddress = "123 Esbjerg Street", ShippingAddress = "123 Esbjerg Street", creditStanding = 666 }
+            };
 
-        if (context.Customers.Any())
-        {
-            return;
+            context.Customers.AddRange(customers);
+            context.SaveChanges();
         }
-
-        List<Customer> customers = new List<Customer>
-        {
-            new Customer{Name = "Testysen", Email = "testysen@email.com", Phone = "+4512345678", BillingAddress = "123 Esbjerg Street", ShippingAddress = "123 Esbjerg Street", creditStanding = 666}
-        };
-        
-        context.Customers.AddRange(customers);
-        context.SaveChanges();
     }
-    
 }

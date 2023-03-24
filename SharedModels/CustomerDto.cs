@@ -1,5 +1,5 @@
-﻿namespace CustomerApi.Models {
-    public class Customer {
+﻿namespace SharedModels {
+    public class CustomerDto {
         public int Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }

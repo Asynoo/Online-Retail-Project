@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 using CustomerApi.Models;
 using Microsoft.EntityFrameworkCore;
 namespace CustomerApi.Data {
@@ -16,7 +13,10 @@ namespace CustomerApi.Data {
         }
 
         async Task<Customer?> IRepository<Customer>.Get(int id) {
-            return await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            Customer? customer = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id);
+            if (customer is null) return null;
+            await _db.Entry(customer).ReloadAsync();
+            return customer;
         }
 
         async Task<Customer> IRepository<Customer>.Add(Customer entity) {

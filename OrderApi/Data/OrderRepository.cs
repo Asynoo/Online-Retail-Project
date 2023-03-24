@@ -1,9 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderApi.Models;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-
-namespace OrderApi.Data
-{
+using OrderApi.Models;
+using SharedModels;
+namespace OrderApi.Data {
     public class OrderRepository : IRepository<Order> {
         private readonly OrderApiContext _db;
 
@@ -12,8 +11,9 @@ namespace OrderApi.Data
         }
 
         async Task<Order> IRepository<Order>.Add(Order entity) {
-            entity.Date ??= DateTime.Now;
-            EntityEntry<Order> newOrderEntry = await _db.Orders.AddAsync(entity);
+            entity.Date = DateTime.Now;
+            EntityEntry<Order> newOrderEntry;
+            newOrderEntry = await _db.Orders.AddAsync(entity);
             await _db.SaveChangesAsync();
             return newOrderEntry.Entity;
         }
@@ -25,11 +25,13 @@ namespace OrderApi.Data
         }
 
         async Task<Order?> IRepository<Order>.Get(int id) {
-            return await _db.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            Order order = await _db.Orders.Include(o => o.OrderLines).FirstOrDefaultAsync(o => o.Id == id);
+            _db.Entry<Order>(order).Reload();
+            return order;
         }
 
         async Task<IEnumerable<Order>> IRepository<Order>.GetAll() {
-            return await _db.Orders.ToListAsync();
+            return await _db.Orders.Include(o => o.OrderLines).ToListAsync();
         }
 
         async Task<bool> IRepository<Order>.Remove(int id) {
