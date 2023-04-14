@@ -20,3 +20,8 @@ services:
       context: .
       dockerfile: ProductApi/Dockerfile
 
+  apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
