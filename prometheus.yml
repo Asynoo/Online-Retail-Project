@@ -1,0 +1,18 @@
+﻿global:
+  scrape_interval:     10s # By default, scrape targets every 5 seconds.
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'apigateway'
+    static_configs:
+      - targets: ['apigateway:80']
+  - job_name: 'customerapi'
+    static_configs:
+      - targets: ['customerapi:80']  
+  - job_name: 'productapi'
+    static_configs:
+      - targets: ['productapi:80']
+  - job_name: 'orderapi'
+    static_configs:
+      - targets: ['orderapi:80']

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
 using ProductApi.Messaging;
 using ProductApi.Models;
+using Prometheus;
 using SharedModels;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -54,9 +55,14 @@ Task.Factory.StartNew(() =>
 
 
 //app.UseHttpsRedirection();
+app.UseHttpMetrics();
+
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapMetrics();
+
 
 app.Run();

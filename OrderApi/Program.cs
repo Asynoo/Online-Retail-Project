@@ -3,6 +3,7 @@ using OrderApi.Data;
 using OrderApi.Infrastructure;
 using OrderApi.Messaging;
 using OrderApi.Models;
+using Prometheus;
 using SharedModels;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -69,9 +70,13 @@ using (IServiceScope scope = app.Services.CreateScope()) {
 }
 
 //app.UseHttpsRedirection();
+app.UseHttpMetrics();
+
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapMetrics();
 
 app.Run();
