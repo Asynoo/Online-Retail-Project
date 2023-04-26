@@ -71,7 +71,6 @@ using (IServiceScope scope = app.Services.CreateScope()) {
 //app.UseHttpsRedirection();
 app.UseHttpMetrics();
 
-
 app.UseAuthorization();
 
 app.MapControllers();

@@ -22,7 +22,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="7.0.3" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.3" />
       <PackageReference Include="RestSharp" Version="108.0.3" />
+      <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.5.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,6 +36,12 @@
       </Reference>
       <Reference Include="Microsoft.EntityFrameworkCore.InMemory">
         <HintPath>..\..\..\.nuget\packages\microsoft.entityframeworkcore.inmemory\7.0.3\lib\net6.0\Microsoft.EntityFrameworkCore.InMemory.dll</HintPath>
+      </Reference>
+      <Reference Include="Prometheus.AspNetCore">
+        <HintPath>..\..\..\.nuget\packages\prometheus-net.aspnetcore\8.0.0\lib\net6.0\Prometheus.AspNetCore.dll</HintPath>
+      </Reference>
+      <Reference Include="Prometheus.NetStandard">
+        <HintPath>..\..\..\.nuget\packages\prometheus-net\8.0.0\lib\net7.0\Prometheus.NetStandard.dll</HintPath>
       </Reference>
     </ItemGroup>
 

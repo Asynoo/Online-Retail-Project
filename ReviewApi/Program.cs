@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 using ReviewApi.Data;
 using ReviewApi.Infrastructure;
 using ReviewApi.Models;
@@ -22,8 +23,34 @@ builder.Services.AddSingleton<IServiceGateway<ProductDto>>(new
 builder.Services.AddSingleton<IServiceGateway<CustomerDto>>(new
     CustomerServiceGateway(customerServiceBaseUrl));
 
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 WebApplication app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment()) {
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// Initialize the database.
+using (IServiceScope scope = app.Services.CreateScope()) {
+    IServiceProvider services = scope.ServiceProvider;
+    ReviewApiContext? dbContext = services.GetService<ReviewApiContext>();
+    IDbInitializer? dbInitializer = services.GetService<IDbInitializer>();
+    dbInitializer.Initialize(dbContext); //This don't work for some reason, I'm too tired sorry
+}
+
+app.UseHttpMetrics();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.MapMetrics();
 
 app.Run();
