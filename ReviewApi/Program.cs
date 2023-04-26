@@ -1,3 +1,4 @@
+using FeatureHubSDK;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Models;
 using Prometheus;
@@ -17,6 +18,8 @@ const string orderServiceBaseUrl = "http://orderApi/products/";
 
 // Add services to the container.
 builder.Services.AddDbContext<ReviewApiContext>(opt => opt.UseInMemoryDatabase("ReviewsDb"));
+
+builder.Services.AddSingleton<EdgeFeatureHubConfig>(new EdgeFeatureHubConfig("http://localhost:8085/", "2994eded-3eb5-4d50-940c-aeadf222e05a/A7z5R9CFQeadXVRw72yASdMkiEW7zLNu5xVOTAzo"));
 
 // Register repositories for dependency injection
 builder.Services.AddScoped<IRepository<Review>, ReviewRepository>();

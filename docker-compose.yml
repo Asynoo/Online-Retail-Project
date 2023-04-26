@@ -25,21 +25,32 @@ services:
     build:
       context: .
       dockerfile: ReviewApi/Dockerfile
-      
+  
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
-      
+  
   prometheus:
     image: prom/prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    
+  
   grafana:
     image: grafana/grafana
     ports:
-        - "3000:3000"
+      - "3000:3000"
+  
+  featurehub:
+    image: featurehub/party-server:latest
+    restart: always
+    volumes:
+      - featurehub-h2-data:/db
+    ports:
+      - 8085:8085
+
+volumes:
+  featurehub-h2-data:

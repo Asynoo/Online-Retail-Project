@@ -1,3 +1,4 @@
+using FeatureHubSDK;
 using Microsoft.AspNetCore.Mvc;
 using ProductApi.Models;
 using ReviewApi.Data;
@@ -14,18 +15,21 @@ namespace ReviewAPI.Controllers {
         private readonly IServiceGateway<CustomerDto> _customerGateway;
         private readonly IServiceGateway<ProductDto> _productGateway;
         private readonly IServiceGateway<OrderDto> _orderGateway;
+        private readonly EdgeFeatureHubConfig _featureHubConfig;
 
         public ReviewsController(
             IRepository<Review> repository,
             IConverter<Review, ReviewDto> reviewConverter,
             IServiceGateway<CustomerDto> customerGateway,
             IServiceGateway<ProductDto> productGateway,
-            IServiceGateway<OrderDto> orderGateway) {
+            IServiceGateway<OrderDto> orderGateway,
+            EdgeFeatureHubConfig featureHubConfig) {
             _repository = repository;
             _reviewConverter = reviewConverter;
             _customerGateway = customerGateway;
             _productGateway = productGateway;
             _orderGateway = orderGateway;
+            _featureHubConfig = featureHubConfig;
         }
 
         // Endpoint to get all reviews
@@ -56,48 +60,60 @@ namespace ReviewAPI.Controllers {
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review)
         {
-            
-            ProductDto? product = await _productGateway.GetAsync(review.ProductId);
-            if (product == null) {
-                return NotFound($"Product with Id: {review.ProductId} not found");
+            if (_featureHubConfig.Repository.IsEnabled("CustomerHasOrderedProduct"))
+            {
+                ProductDto? product = await _productGateway.GetAsync(review.ProductId);
+                if (product == null)
+                {
+                    return NotFound($"Product with Id: {review.ProductId} not found");
+                }
+
+                CustomerDto? customer = await _customerGateway.GetAsync(review.CustomerId);
+                if (customer == null)
+                {
+                    return NotFound($"Customer with Id: {review.CustomerId} not found");
+                }
+
+
+                // Check if the customer has ordered this product before
+                //TODO Create CustomerHasOrderedProduct. I simply prepared the code for it here.
+                /*
+                if (!await _orderGateway.CustomerHasOrderedProductAsync(customer.Id, product.Id))
+                {
+                    return BadRequest($"Customer with Id: {review.CustomerId} has not ordered product with Id: {review.ProductId}");
+                }
+                */
+                Review? createdReview = await _repository.Add(new Review
+                {
+                    ProductId = review.ProductId,
+                    CustomerId = review.CustomerId,
+                    Title = review.Title,
+                    Rating = review.Rating,
+                    Description = review.Description
+                });
+
+                if (createdReview == null)
+                {
+                    return BadRequest("Failed to create review");
+                }
+
+                return Ok(createdReview);
+            }
+            else
+            {
+                var yehaw = FeatureLogging.ErrorLogger += (sender, s) => Console.WriteLine("ERROR U GAY");
             }
 
-            CustomerDto? customer = await _customerGateway.GetAsync(review.CustomerId);
-            if (customer == null) {
-                return NotFound($"Customer with Id: {review.CustomerId} not found");
-            }
-            
-            
-            // Check if the customer has ordered this product before
-            //TODO Create CustomerHasOrderedProduct. I simply prepared the code for it here.
-            /*
-            if (!await _orderGateway.CustomerHasOrderedProductAsync(customer.Id, product.Id))
-            {
-                return BadRequest($"Customer with Id: {review.CustomerId} has not ordered product with Id: {review.ProductId}");
-            }
-            */
-            Review? createdReview = await _repository.Add(new Review
-            {
-                ProductId = review.ProductId,
-                CustomerId = review.CustomerId,
-                Title = review.Title,
-                Rating = review.Rating,
-                Description = review.Description
-            });
-            
-            if (createdReview == null) {
-                return BadRequest("Failed to create review");
-            }
-
-            return Ok(createdReview);
+            return null;
         }
-
-        /*// Endpoint to update a review by ID
-        [HttpPut("{id}")]
-        public IActionResult UpdateReview(int id, [FromBody] ReviewPutBindingModel review)
-        {
-            // Implementation
-        }*/
+    
+        
+    /*// Endpoint to update a review by ID
+    [HttpPut("{id}")]
+    public IActionResult UpdateReview(int id, [FromBody] ReviewPutBindingModel review)
+    {
+        // Implementation
+    }*/
 
         // Endpoint to delete a review by ID
         [HttpDelete("{id}")]
