@@ -9,6 +9,7 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Change these URLs when you run it yourself, i might have different ports depending on HTTP/HTTPS
 const string productServiceBaseUrl = "http://localhost:7287/products/";
 const string customerServiceBaseUrl = "http://localhost:5057/customer/";
 const string orderServiceBaseUrl = "http://localhost:7042/customer/";
