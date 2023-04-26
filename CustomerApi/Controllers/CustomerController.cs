@@ -15,6 +15,18 @@ namespace CustomerApi.Controllers {
             _customerConverter = converter;
 
         }
+        
+        //GET all Customers
+        [HttpGet( Name = "GetCustomers")]
+        public async Task<IActionResult> Get() {
+            IEnumerable<Customer> customers = (await _repository.GetAll()).ToList();
+            if (!customers.Any()) {
+                return NotFound();
+            }
+
+            IEnumerable<CustomerDto> customerDtos = customers.Select(x => _customerConverter.Convert(x));
+            return new ObjectResult(customerDtos);
+        }
 
         //GET Customer
         [HttpGet("{id}", Name = "GetCustomer")]

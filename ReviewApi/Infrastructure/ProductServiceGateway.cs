@@ -1,6 +1,8 @@
+using System.Net;
 using System.Text.Json;
-using ReviewApi.Infrastructure;
 using SharedModels;
+
+namespace ReviewApi.Infrastructure; 
 
 public class ProductServiceGateway : IServiceGateway<ProductDto>
 {
@@ -13,13 +15,14 @@ public class ProductServiceGateway : IServiceGateway<ProductDto>
         _baseUrl = baseUrl;
     }
 
-    public async Task<ProductDto> GetAsync(int id)
+    public async Task<ProductDto?> GetAsync(int id)
     {
         var response = await _httpClient.GetAsync($"{_baseUrl}{id}");
-        response.EnsureSuccessStatusCode();
-        var responseContent = await response.Content.ReadAsStringAsync();
-        var productDto = JsonSerializer.Deserialize<ProductDto>(responseContent, new JsonSerializerOptions
-        {
+        if (response.StatusCode != HttpStatusCode.OK) {
+            return null;
+        }
+        string responseContent = await response.Content.ReadAsStringAsync();
+        ProductDto? productDto = JsonSerializer.Deserialize<ProductDto>(responseContent, new JsonSerializerOptions {
             PropertyNameCaseInsensitive = true
         });
         return productDto;

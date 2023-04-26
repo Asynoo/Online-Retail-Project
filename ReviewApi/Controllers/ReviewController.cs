@@ -52,25 +52,20 @@ namespace ReviewAPI.Controllers {
             return Ok(reviewDto);
         }
 
-// Endpoint to create a new review
+        // Endpoint to create a new review
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review)
         {
             
-            //The stuff under here will never work since it will always be false. Gotta make it work some other way. If enabled the HttpPost will cease to function kekw.
-            /*
-            var product = await _productGateway.GetAsync(review.ProductId);
-            if (product == null)
-            {
+            ProductDto? product = await _productGateway.GetAsync(review.ProductId);
+            if (product == null) {
                 return NotFound($"Product with Id: {review.ProductId} not found");
             }
-    
-            var customer = await _customerGateway.GetAsync(review.CustomerId);
-            if (customer == null)
-            {
+
+            CustomerDto? customer = await _customerGateway.GetAsync(review.CustomerId);
+            if (customer == null) {
                 return NotFound($"Customer with Id: {review.CustomerId} not found");
             }
-            */
             
             
             // Check if the customer has ordered this product before
@@ -81,7 +76,7 @@ namespace ReviewAPI.Controllers {
                 return BadRequest($"Customer with Id: {review.CustomerId} has not ordered product with Id: {review.ProductId}");
             }
             */
-            var createdReview = await _repository.Add(new Review
+            Review? createdReview = await _repository.Add(new Review
             {
                 ProductId = review.ProductId,
                 CustomerId = review.CustomerId,
@@ -90,43 +85,12 @@ namespace ReviewAPI.Controllers {
                 Description = review.Description
             });
             
-            if (createdReview == null)
-            {
+            if (createdReview == null) {
                 return BadRequest("Failed to create review");
             }
 
-            return CreatedAtAction(nameof(GetReviewById), new { id = createdReview.Id }, createdReview);
-        }
-
-        
-        /*
-         * // Endpoint to create a new review
-        [HttpPost]
-        public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review) {
-            ProductDto? product = await _productGateway.GetAsync(review.ProductId);
-            if (product is null) {
-                return NotFound($"Product with Id: {review.ProductId} not found");
-            }
-            CustomerDto? customer = await _customerGateway.GetAsync(review.CustomerId);
-            if (customer is null) {
-                return NotFound($"Customer with Id: {review.CustomerId} not found");
-            }
-            //TODO: Verify that the customer has ordered this product before
-
-            Review createdReview = await _repository.Add(new Review{
-                ProductId = review.ProductId,
-                CustomerId = review.CustomerId,
-                Title = review.Title,
-                Rating = review.Rating,
-                Description = review.Description});
-
-            if (createdReview is null) {
-                return BadRequest("Failed to create review");
-            }
-    
             return Ok(createdReview);
         }
-         */
 
         /*// Endpoint to update a review by ID
         [HttpPut("{id}")]

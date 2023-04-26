@@ -9,7 +9,7 @@ namespace ReviewApi.Data {
             _db = context;
         }
 
-        async Task<Review> IRepository<Review>.Add(Review entity) {
+        async Task<Review?> IRepository<Review>.Add(Review entity) {
             entity.AddedAt = DateTime.Now;
             EntityEntry<Review> newReviewEntry = await _db.Reviews.AddAsync(entity);
             await _db.SaveChangesAsync();

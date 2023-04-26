@@ -1,5 +1,8 @@
-﻿using ReviewApi.Infrastructure;
+﻿using System.Net;
+using System.Text.Json;
 using SharedModels;
+
+namespace ReviewApi.Infrastructure; 
 
 public class OrderServiceGateway : IServiceGateway<OrderDto>
 {
@@ -13,11 +16,13 @@ public class OrderServiceGateway : IServiceGateway<OrderDto>
     public async Task<OrderDto?> GetAsync(int id)
     {
         HttpResponseMessage response = await _httpClient.GetAsync($"orders/{id}");
-        if (response.IsSuccessStatusCode)
-        {
-            OrderDto order = await response.Content.ReadFromJsonAsync<OrderDto>();
-            return order;
+        if (response.StatusCode != HttpStatusCode.OK) {
+            return null;
         }
-        return null;
+        string responseContent = await response.Content.ReadAsStringAsync();
+        OrderDto? order = JsonSerializer.Deserialize<OrderDto>(responseContent, new JsonSerializerOptions {
+            PropertyNameCaseInsensitive = true
+        });
+        return order;
     }
 }
