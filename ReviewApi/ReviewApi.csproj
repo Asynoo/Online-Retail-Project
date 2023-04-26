@@ -24,6 +24,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="7.0.3" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.3" />
+      <PackageReference Include="prometheus-net.AspNetCore" Version="8.0.0" />
       <PackageReference Include="RestSharp" Version="108.0.3" />
       <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.5.0" />
       <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
