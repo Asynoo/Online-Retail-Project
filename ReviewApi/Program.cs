@@ -9,7 +9,7 @@ using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-const string productServiceBaseUrl = "http://localhost:7298/products/";
+const string productServiceBaseUrl = "http://localhost:7287/products/";
 const string customerServiceBaseUrl = "http://localhost:5057/customer/";
 const string orderServiceBaseUrl = "http://localhost:7042/customer/";
 
