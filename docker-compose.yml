@@ -20,6 +20,12 @@ services:
       context: .
       dockerfile: ProductApi/Dockerfile
 
+  reviewapi:
+    image: ${DOCKER_REGISTRY-}reviewapi
+    build:
+      context: .
+      dockerfile: ReviewApi/Dockerfile
+      
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
     build:
