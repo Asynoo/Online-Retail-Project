@@ -10,10 +10,10 @@ namespace OrderApi.Controllers {
     public class OrdersController : ControllerBase {
         private readonly IConverter<OrderLine, OrderLineDto> _orderLineConverter = new OrderLineConverter();
 
-        private readonly IServiceGateway<CustomerDto> _customerServiceGateway;
-        private readonly IMessagePublisher _messagePublisher;
-
         private readonly IServiceGateway<ProductDto> _productServiceProductGateway;
+        private readonly IServiceGateway<CustomerDto> _customerServiceGateway;
+
+        private readonly IMessagePublisher _messagePublisher;
 
         private readonly IRepository<Order> _repository;
 

@@ -22,7 +22,6 @@ string cloudAMQPConnectionString =
     "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
 
 // Add services to the container.
-
 builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
 
 // Register repositories for dependency injection

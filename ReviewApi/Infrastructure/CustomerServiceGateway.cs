@@ -1,6 +1,6 @@
-﻿using RestSharp;
+using RestSharp;
 using SharedModels;
-namespace OrderApi.Infrastructure {
+namespace ReviewApi.Infrastructure {
     public class CustomerServiceGateway : IServiceGateway<CustomerDto> {
         private readonly string _customerServiceBaseUrl;
 

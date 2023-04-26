@@ -28,6 +28,7 @@ namespace ProductApi.Data {
             return changes > 0;
         }
         #endregion
+        
         #region READ
         async Task<Product?> IRepository<Product>.Get(int id) {
             return await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
