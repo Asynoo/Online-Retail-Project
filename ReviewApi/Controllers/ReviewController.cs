@@ -55,11 +55,11 @@ namespace ReviewAPI.Controllers {
         // Endpoint to create a new review
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review) {
-            ProductDto? product = await _productGateway.Get(review.ProductId);
+            ProductDto? product = await _productGateway.GetAsync(review.ProductId);
             if (product is null) {
                 return NotFound($"Product with Id{review.ProductId} not found");
             }
-            CustomerDto? customer = await _customerGateway.Get(review.CustomerId);
+            CustomerDto? customer = await _customerGateway.GetAsync(review.CustomerId);
             if (customer is null) {
                 return NotFound($"Customer with Id{review.CustomerId} not found");
             }

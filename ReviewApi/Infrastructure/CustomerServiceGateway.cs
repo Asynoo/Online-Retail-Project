@@ -1,26 +1,27 @@
-using RestSharp;
+using System.Text.Json;
+using ReviewApi.Infrastructure;
 using SharedModels;
-namespace ReviewApi.Infrastructure {
-    public class CustomerServiceGateway : IServiceGateway<CustomerDto> {
-        private readonly string _customerServiceBaseUrl;
 
-        public CustomerServiceGateway(string baseUrl) {
-            _customerServiceBaseUrl = baseUrl;
-        }
+public class CustomerServiceGateway : IServiceGateway<CustomerDto>
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _baseUrl;
 
-        public async Task<CustomerDto?> Get(int id) {
-            RestClient c = new(_customerServiceBaseUrl);
+    public CustomerServiceGateway(string baseUrl)
+    {
+        _httpClient = new HttpClient();
+        _baseUrl = baseUrl;
+    }
 
-            RestRequest request = new(id.ToString());
-            CustomerDto? response = await c.GetAsync<CustomerDto>(request);
-            return response;
-        }
-        public async Task<List<CustomerDto>?> GetAll() {
-            RestClient c = new(_customerServiceBaseUrl);
-
-            RestRequest request = new();
-            IEnumerable<CustomerDto>? response = await c.GetAsync<IEnumerable<CustomerDto>>(request);
-            return response?.ToList();
-        }
+    public async Task<CustomerDto> GetAsync(int id)
+    {
+        var response = await _httpClient.GetAsync($"{_baseUrl}{id}");
+        response.EnsureSuccessStatusCode();
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var customerDto = JsonSerializer.Deserialize<CustomerDto>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        return customerDto;
     }
 }
