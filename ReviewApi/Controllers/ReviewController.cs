@@ -20,7 +20,8 @@ namespace ReviewAPI.Controllers {
             IConverter<Review, ReviewDto> reviewConverter,
             IServiceGateway<CustomerDto> customerGateway,
             IServiceGateway<ProductDto> productGateway,
-            IServiceGateway<OrderDto> orderGateway) {
+            IServiceGateway<OrderDto> orderGateway
+            ) {
             _repository = repository;
             _reviewConverter = reviewConverter;
             _customerGateway = customerGateway;
