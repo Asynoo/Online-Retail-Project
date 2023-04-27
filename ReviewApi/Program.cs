@@ -8,9 +8,12 @@ using SharedModels;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 //Change these URLs when you run it yourself, i might have different ports depending on HTTP/HTTPS
-const string productServiceBaseUrl = "http://localhost:5298/products/";
-const string customerServiceBaseUrl = "http://localhost:5057/customer/";
-const string orderServiceBaseUrl = "http://localhost:5197/customer/";
+const string productServiceBaseUrl = "http://productApi/products/";
+// const string productServiceBaseUrl = "http://localhost:5298/products/";
+const string customerServiceBaseUrl = "http://customerApi/products/";
+// const string customerServiceBaseUrl = "http://localhost:5057/customer/";
+const string orderServiceBaseUrl = "http://orderApi/products/";
+// const string orderServiceBaseUrl = "http://localhost:5197/customer/";
 
 // Add services to the container.
 builder.Services.AddDbContext<ReviewApiContext>(opt => opt.UseInMemoryDatabase("ReviewsDb"));

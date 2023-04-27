@@ -8,7 +8,8 @@ using SharedModels;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-const string productServiceBaseUrl = "http://localhost:5019/reviews/";
+const string reviewServiceBaseUrl = "http://reviewApi/reviews/";
+// const string reviewServiceBaseUrl = "http://localhost:5019/reviews/";
 
 
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
@@ -33,7 +34,7 @@ builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
 
 // Register ReviewGateway for dependency injection
-builder.Services.AddSingleton<IServiceGateway<ReviewDto>>(new ReviewServiceGateway(productServiceBaseUrl));
+builder.Services.AddSingleton<IServiceGateway<ReviewDto>>(new ReviewServiceGateway(reviewServiceBaseUrl));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
