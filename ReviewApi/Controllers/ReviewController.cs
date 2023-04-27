@@ -99,11 +99,12 @@ namespace ReviewAPI.Controllers {
             // Implementation
         }*/
 
-        /*// Endpoint to delete a review by ID
+        // Endpoint to delete a review by ID
         [HttpDelete("{id}")]
-        public IActionResult DeleteReview(int id) {
-            // Implementation
-        }*/
+        public async Task<IActionResult> DeleteReview(int id) {
+            bool success = await _repository.Remove(id);
+            return success ? Ok() : BadRequest($"Failed to delete review with ID:{id}");
+        }
 
         // Endpoint to get reviews by product ID
         [HttpGet("product/{productId}")]
