@@ -40,7 +40,8 @@ namespace ProductApi.Controllers {
                 return NotFound();
             }
             ProductDto productDto = _productConverter.Convert(item);
-            productDto.Reviews = await _reviewGateway.GetForProduct(item.Id) ?? new ();
+            productDto.Reviews = await _reviewGateway.GetForProduct(item.Id);
+            
             return Ok(productDto);
         }
 

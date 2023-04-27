@@ -5,6 +5,6 @@
         public decimal Price { get; set; }
         public int ItemsInStock { get; set; }
         public int ItemsReserved { get; set; }
-        public List<ReviewDto> Reviews { get; set; } = new();
+        public List<ReviewDto>? Reviews { get; set; }
     }
 }
