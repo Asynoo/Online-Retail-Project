@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
+using ProductApi.Infrastructure;
 using ProductApi.Messaging;
 using ProductApi.Models;
 using Prometheus;
 using SharedModels;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+const string productServiceBaseUrl = "http://localhost:5019/reviews/";
+
 
 // RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
 const string cloudAmqpConnectionString = "host=cow.rmq2.cloudamqp.com;virtualHost=lylmzobc;username=lylmzobc;password=Uvoj_K_jYaPmfMZ3xVn1a4hWfXgee2Od";
@@ -27,6 +31,9 @@ builder.Services.AddTransient<IDbInitializer, DbInitializer>();
  
 // Register ProductConverter for dependency injection
 builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
+
+// Register ReviewGateway for dependency injection
+builder.Services.AddSingleton<IServiceGateway<ReviewDto>>(new ReviewServiceGateway(productServiceBaseUrl));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

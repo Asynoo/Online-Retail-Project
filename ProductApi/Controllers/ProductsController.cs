@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProductApi.Data;
+using ProductApi.Infrastructure;
 using ProductApi.Models;
 using SharedModels;
 namespace ProductApi.Controllers {
@@ -7,22 +8,28 @@ namespace ProductApi.Controllers {
     [Route("[controller]")]
     public class ProductsController : ControllerBase {
         private readonly IConverter<Product, ProductDto> _productConverter;
+        private readonly IServiceGateway<ReviewDto> _reviewGateway;
         private readonly IRepository<Product> _repository;
 
-        public ProductsController(IRepository<Product> repos, IConverter<Product, ProductDto> converter) {
-            _repository = repos;
+        public ProductsController(
+            IConverter<Product, ProductDto> converter,
+            IServiceGateway<ReviewDto> reviewGateway,
+            IRepository<Product> repository
+            ) {
             _productConverter = converter;
+            _reviewGateway = reviewGateway;
+            _repository = repository;
         }
 
         // GET products
         [HttpGet]
-        public async Task<IEnumerable<ProductDto>> Get() {
-            var productDtoList = new List<ProductDto>();
-            foreach (Product product in await _repository.GetAll()) {
-                ProductDto productDto = _productConverter.Convert(product);
-                productDtoList.Add(productDto);
+        public async Task<IActionResult> GetAll() {
+            List<Product> products = (await _repository.GetAll()).ToList();
+            if (!products.Any()) {
+                return NoContent();
             }
-            return productDtoList;
+            IEnumerable<ProductDto> productDtoList = products.Select(x => _productConverter.Convert(x));
+            return Ok(productDtoList);
         }
 
         // GET products/5
@@ -33,22 +40,18 @@ namespace ProductApi.Controllers {
                 return NotFound();
             }
             ProductDto productDto = _productConverter.Convert(item);
-            return new ObjectResult(productDto);
+            productDto.Reviews = await _reviewGateway.GetForProduct(item.Id) ?? new ();
+            return Ok(productDto);
         }
 
         // POST products
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ProductDto productDto) {
 
-            if (productDto == null) {
-                return BadRequest();
-            }
-
             Product product = _productConverter.Convert(productDto);
             Product newProduct = await _repository.Add(product);
 
-            //return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
-            return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, _productConverter.Convert(newProduct));
+            return Ok(newProduct);
         }
 
         // PUT products/5

@@ -7,7 +7,7 @@ using SharedModels;
 
 namespace ReviewAPI.Controllers {
     [ApiController]
-    [Route("api/reviews")]
+    [Route("[controller]")]
     public class ReviewsController : Controller {
         private readonly IRepository<Review> _repository;
         private readonly IConverter<Review, ReviewDto> _reviewConverter;
