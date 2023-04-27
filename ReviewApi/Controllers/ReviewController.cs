@@ -58,9 +58,9 @@ namespace ReviewAPI.Controllers {
 
         // Endpoint to create a new review
         [HttpPost]
-        public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review)
-        {
-            if (_featureHubConfig.Repository.IsEnabled("CustomerHasOrderedProduct"))
+        public async Task<IActionResult> CreateReview([FromBody] ReviewPostBindingModel review) {
+            IClientContext? fh = await _featureHubConfig.NewContext().Build();
+            if (fh.IsEnabled("CreateReview"))
             {
                 ProductDto? product = await _productGateway.GetAsync(review.ProductId);
                 if (product == null)
@@ -99,12 +99,8 @@ namespace ReviewAPI.Controllers {
 
                 return Ok(createdReview);
             }
-            else
-            {
-                var yehaw = FeatureLogging.ErrorLogger += (sender, s) => Console.WriteLine("ERROR U GAY");
-            }
-
-            return null;
+            var yehaw = FeatureLogging.ErrorLogger += (sender, s) => Console.WriteLine("ERROR U GAY");
+            return StatusCode(405);
         }
     
         
