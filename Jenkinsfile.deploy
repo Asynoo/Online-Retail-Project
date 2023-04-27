@@ -1,0 +1,14 @@
+pipeline {
+    agent any
+    parameters {
+        string defaultValue: "", name: 'DEPLOY_NUMBER', trim: true
+    }
+    stages {
+        stage("Deploy") {
+            steps {
+                sh "docker compose rm"
+                sh "docker compose up -d"
+            }
+        }
+    }
+}

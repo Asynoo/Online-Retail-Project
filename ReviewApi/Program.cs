@@ -19,7 +19,7 @@ const string orderServiceBaseUrl = "http://orderApi/products/";
 // Add services to the container.
 builder.Services.AddDbContext<ReviewApiContext>(opt => opt.UseInMemoryDatabase("ReviewsDb"));
 
-builder.Services.AddSingleton<EdgeFeatureHubConfig>(new EdgeFeatureHubConfig("http://localhost:8085/", "2994eded-3eb5-4d50-940c-aeadf222e05a/A7z5R9CFQeadXVRw72yASdMkiEW7zLNu5xVOTAzo"));
+builder.Services.AddSingleton<EdgeFeatureHubConfig>(new EdgeFeatureHubConfig("http://localhost:8085/", "c47c10a6-d9bd-40b8-9f3e-e3a26f7f743e/S6yKBRzzBKzygNjoqQobmNj2AKKympyFpRo2cs5n"));
 
 // Register repositories for dependency injection
 builder.Services.AddScoped<IRepository<Review>, ReviewRepository>();

@@ -2,32 +2,32 @@ version: '3.4'
 
 services:
   customerapi:
-    image: ${DOCKER_REGISTRY-}customerapi
+    image: asyno/customerapi/:${DEPLOY_NUMBER}
     build:
       context: .
       dockerfile: CustomerApi/Dockerfile
 
   orderapi:
-    image: ${DOCKER_REGISTRY-}orderapi
+    image: asyno/orderapi/:${DEPLOY_NUMBER}
     build:
       context: .
       dockerfile: OrderApi/Dockerfile
 
 
   productapi:
-    image: ${DOCKER_REGISTRY-}productapi
+    image: asyno/productapi/:${DEPLOY_NUMBER}
     build:
       context: .
       dockerfile: ProductApi/Dockerfile
 
   reviewapi:
-    image: ${DOCKER_REGISTRY-}reviewapi
+    image: asyno/reviewapi/:${DEPLOY_NUMBER}
     build:
       context: .
       dockerfile: ReviewApi/Dockerfile
   
   apigateway:
-    image: ${DOCKER_REGISTRY-}apigateway
+    image: asyno/apigateway/:${DEPLOY_NUMBER}
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
@@ -43,7 +43,7 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
-  
+
   featurehub:
     image: featurehub/party-server:latest
     restart: always
@@ -54,3 +54,4 @@ services:
 
 volumes:
   featurehub-h2-data:
+    

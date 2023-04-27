@@ -30,6 +30,7 @@ namespace ReviewAPI.Controllers {
             _productGateway = productGateway;
             _orderGateway = orderGateway;
             _featureHubConfig = featureHubConfig;
+            _featureHubConfig.Init();
         }
 
         // Endpoint to get all reviews
@@ -99,7 +100,6 @@ namespace ReviewAPI.Controllers {
 
                 return Ok(createdReview);
             }
-            var yehaw = FeatureLogging.ErrorLogger += (sender, s) => Console.WriteLine("ERROR U GAY");
             return StatusCode(405);
         }
     
