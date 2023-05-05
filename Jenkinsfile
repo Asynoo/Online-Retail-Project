@@ -7,24 +7,15 @@ pipeline {
         DEPLOY_NUMBER = "${BUILD_NUMBER}"
     }
     stages {
-        stage("Build") {
-            steps {
-                sh "dotnet build"
-                sh "docker compose build"
-            }
+  	stage('Maven Install') {
+    	agent {
+      	docker {
+        	image 'maven:3.5.0'
         }
-        stage("Deliver") {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'DockerHub', passwordVariable: 'DH_PASSWORD', usernameVariable: 'DH_USERNAME')]) {
-                    sh 'docker login -u $DH_USERNAME -p $DH_PASSWORD'
-                    sh "docker compose push"
-                }
-            }
-        }
-        stage("Deploy") {
-            steps {
-                build job: 'EASV_Rollback', parameters: [[$class: 'StringParameterValue', name: 'DEPLOY_NUMBER', value: "${BUILD_NUMBER}"]]
-            }
-        }
+      }
+      steps {
+      	sh 'mvn clean install'
+      }
     }
+  }
 }
