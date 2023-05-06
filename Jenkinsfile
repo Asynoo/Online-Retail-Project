@@ -7,15 +7,11 @@ pipeline {
         DEPLOY_NUMBER = "${BUILD_NUMBER}"
     }
     stages {
-  	stage('Maven Install') {
-    	agent {
-      	docker {
-        	image 'maven:3.5.0'
+	  stage("Build") {
+            steps {
+                sh "docker compose build"
+            }
         }
-      }
-      steps {
-      	sh 'mvn clean install'
-      }
     }
   }
 }
