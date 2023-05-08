@@ -2,32 +2,32 @@ version: '3.4'
 
 services:
   customerapi:
-    image: asyno/customerapi
+    image: alisdair01/customerapi
     build:
       context: .
       dockerfile: CustomerApi/Dockerfile
 
   orderapi:
-    image: asyno/orderapi
+    image: alisdair01/orderapi
     build:
       context: .
       dockerfile: OrderApi/Dockerfile
 
 
   productapi:
-    image: asyno/productapi
+    image: alisdair01/productapi
     build:
       context: .
       dockerfile: ProductApi/Dockerfile
 
   reviewapi:
-    image: asyno/reviewapi
+    image: alisdair01/reviewapi
     build:
       context: .
       dockerfile: ReviewApi/Dockerfile
   
   apigateway:
-    image: asyno/apigateway
+    image: alisdair01/apigateway
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
@@ -45,18 +45,6 @@ services:
       - "3000:3000"
 
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    ports:
-      - "8081:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - my-network
-
-
   featurehub:
     image: featurehub/party-server:latest
     restart: always
@@ -67,7 +55,6 @@ services:
 
 volumes:
   featurehub-h2-data:
-  jenkins_home:
 networks:
   my-network:
     
